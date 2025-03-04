@@ -46,7 +46,7 @@ export default function Skill() {
   return (
     <Card title={"skills"}>
       <section>
-        <h1 className="text-xl font-semibold text-accent-2">Skills</h1>
+        <h1 className="text-xl font-semibold text-accent-2 pb-3">Skills</h1>
       </section>
       <section>
         <Sliders data={skills} />

@@ -6,7 +6,7 @@ export default function ButtonPrimary({ icon, title, onClick }) {
     <Button
       onClick={onClick}
       size="sm"
-      className="bg-accent-2/20 hover:bg-accent-2/50 text-white border border-accent-2/30 transition-all  shadow-md hover:shadow-lg flex flex-row gap-2 items-center rounded-full"
+      className="bg-accent-2/20 hover:bg-accent-2/50 text-text border border-accent-2/30 transition-all  shadow-md hover:shadow-lg flex flex-row gap-2 items-center rounded-full"
     >
       {icon}
       <h1 className="ml-2">{title}</h1>

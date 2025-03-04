@@ -50,7 +50,7 @@ export default function Sliders({ data }) {
                 <ButtonIcons icon={data.icon} />
               </div>
               <div className="w-full ">
-                <h1 className=" text-xl text-accent">{data.name}</h1>
+                <h1 className=" text-xl text-accent-2">{data.name}</h1>
                 {data.progress && (
                   <Progress
                     value={data.progress}

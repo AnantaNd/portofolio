@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { FaHome, FaProjectDiagram, FaEnvelope } from "react-icons/fa";
+import { FaProjectDiagram, FaEnvelope, FaCampground } from "react-icons/fa";
 import { useLocation, Link } from "react-router-dom";
 
 const navItems = [
   {
     path: "/",
     name: "Home",
-    icon: <FaHome className="sm:rotate-0 -rotate-90" />,
+    icon: <FaCampground className="sm:rotate-0 -rotate-90" />,
   },
   {
     path: "/projects",
@@ -52,7 +52,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`backdrop-blur-sm sm:backdrop-blur-xl shadow-md border bg-primary/10 shadow-primary/40 border-primary hover:border-accent/50 hover:shadow-accent/20 p-2 sticky z-50 mx-auto w-fit rounded-full top-4 flex justify-center items-center overflow-hidden transition-all duration-500 ease-in-out transform translate-y-0`}
+      className={`backdrop-blur-sm sm:backdrop-blur-xl shadow-md border bg-primary/10 shadow-primary/40 border-primary hover:border-accent/50 hover:shadow-accent/20 p-2 sticky z-50 mx-auto w-fit rounded-full top-8 flex justify-center items-center overflow-hidden transition-all duration-500 ease-in-out transform translate-y-0`}
     >
       {loading && (
         <div
@@ -69,7 +69,7 @@ export default function Navbar() {
               className={`flex items-center gap-2 sm:py-2 sm:px-4 py-3 px-3  rounded-full transition-all duration-300 ease-in-out transform 
                 ${
                   location.pathname === item.path
-                    ? "bg-accent/10 text-accent shadow-md border border-accent/30 scale-105"
+                    ? "bg-accent/10 text-accent-2 shadow-md border border-accent/30 scale-105"
                     : "text-text/80 hover:bg-text/10 border border-transparent hover:border-text/30 hover:scale-105"
                 } active:scale-95`}
             >

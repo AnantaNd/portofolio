@@ -29,7 +29,7 @@ export default function About() {
         <div className="">
           <p className="text-lg text-text leading-relaxed text-justify">
             I am a highly motivated Frontend Developer with{" "}
-            <span className="font-semibold">
+            <span className="font-semibold underline underline-offset-2 ">
               2 years of professional experience
             </span>{" "}
             and. Specializing in React.js, Next.js and Vue.js, I build

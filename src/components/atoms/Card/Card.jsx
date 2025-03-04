@@ -16,13 +16,13 @@ export default function Card({ children, title, hide }) {
 
   return (
     <div
-      className={`mx-auto bg-primary/10 backdrop-blur-2xl border border-primary/20 rounded-[2.5rem] p-6 md:p-10 shadow-md shadow-primary/40 transition-all duration-300 ${
+      className={`mx-auto bg-primary/10 backdrop-blur-2xl  border border-primary/20  rounded-[2.5rem] p-6 md:p-10 shadow-md shadow-primary/40 hover:shadow-md hover:shadow-accent/40 transition-all duration-300 ${
         isClosed ? "animate-glass-break" : ""
       }`}
     >
       <section>
         {!hide && (
-          <div className="flex items-center space-x-2 px-2 pb-4">
+          <div className="flex items-center space-x-2 pb-4">
             <div
               className="relative w-[14px] h-[14px] bg-red-500 rounded-full cursor-pointer group"
               onClick={() => setIsClosed(true)}
