@@ -66,7 +66,7 @@ export default function Navbar() {
           <li key={index} className="uppercase flex items-center">
             <Link
               to={item.path}
-              className={`flex items-center gap-2 py-2 px-4 rounded-full transition-all duration-300 ease-in-out transform 
+              className={`flex items-center gap-2 sm:py-2 sm:px-4 py-3 px-3  rounded-full transition-all duration-300 ease-in-out transform 
                 ${
                   location.pathname === item.path
                     ? "bg-accent/10 text-accent shadow-md border border-accent/30 scale-105"

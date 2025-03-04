@@ -13,7 +13,7 @@ export default function Layouts() {
       <div className="sticky top-4 z-50 sm:block hidden">
         <Navbar />
       </div>
-      <div className="fixed bottom-52 -right-16 rotate-90 z-50 sm:hidden block ">
+      <div className="fixed bottom-52 -right-12 rotate-90 z-50 sm:hidden block ">
         <Navbar />
       </div>
 
