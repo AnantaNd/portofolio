@@ -31,7 +31,7 @@ export default function Cta() {
               />
             </div>
           </div>
-          <div className="flex flex-row items-center gap-4 justify-center md:justify-start pt-4">
+          <div className="flex flex-row items-center gap-4 justify-center md:justify-start pt-4 ">
             <Link to="https://www.linkedin.com/in/anantanoviandanu/">
               <ButtonIcons icon={<FaLinkedinIn size={20} />} />
             </Link>

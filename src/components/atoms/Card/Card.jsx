@@ -36,9 +36,9 @@ export default function Card({ children, title }) {
       </section>
       <section>
         <div
-          className={`transition-all duration-500 ease-in-out overflow-hidden ${
+          className={`transition-all duration-500 ease-in-out ${
             isMinimized
-              ? "max-h-0 scale-y-0 opacity-0"
+              ? "max-h-0 scale-y-0 opacity-0  overflow-hidden"
               : "max-h-fit scale-y-100 opacity-100"
           }`}
         >

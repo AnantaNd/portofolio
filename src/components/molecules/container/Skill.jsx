@@ -7,27 +7,38 @@ import { TbBrandJavascript } from "react-icons/tb";
 
 import Card from "../../atoms/Card/Card";
 import Sliders from "../Sliders/Slider";
+import { SiTailwindcss } from "react-icons/si";
 
 const skills = [
   {
     name: "JavaScript",
     icon: <TbBrandJavascript size={20} />,
+    progress: 90,
   },
   {
     name: "React Js",
     icon: <FaReact size={20} />,
+    progress: 95,
   },
   {
     name: "Vue Js",
     icon: <FaVuejs size={20} />,
+    progress: 80,
   },
   {
     name: "Node.js",
     icon: <FaNodeJs size={20} />,
+    progress: 85,
   },
   {
     name: "Figma",
     icon: <FaFigma size={20} />,
+    progress: 78,
+  },
+  {
+    name: "Tailwind CSS",
+    icon: <SiTailwindcss size={20} />,
+    progress: 90,
   },
 ];
 

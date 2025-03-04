@@ -3,6 +3,7 @@ import ButtonIcons from "../../atoms/Button/ButtonIcons";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { Progress } from "@material-tailwind/react";
 export default function Sliders({ data }) {
   const settings = {
     dots: false,
@@ -42,11 +43,22 @@ export default function Sliders({ data }) {
   return (
     <Slider {...settings}>
       {data?.map((data, index) => (
-        <div key={index} className="px-2">
-          <div className="mx-auto p-4 bg-primary/10 backdrop-blur-xl border border-primary/20 rounded-[2rem] shadow-md shadow-primary/40">
-            <div className="flex flex-row items-center gap-2">
-              <ButtonIcons icon={data.icon} />
-              <h1 className="uppercase text-xl text-accent-2">{data.name}</h1>
+        <div key={index} className="px-2 ">
+          <div className=" mx-auto p-4 bg-primary/10  border border-primary/20 rounded-[1.8rem]">
+            <div className="flex flex-row items-center gap-6">
+              <div>
+                <ButtonIcons icon={data.icon} />
+              </div>
+              <div className="w-full ">
+                <h1 className=" text-xl text-accent">{data.name}</h1>
+                {data.progress && (
+                  <Progress
+                    value={data.progress}
+                    color="light-blue"
+                    size="sm"
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>

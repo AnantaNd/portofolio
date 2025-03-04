@@ -31,8 +31,8 @@ export default function Navbar() {
 
     const interval = setInterval(() => {
       setProgress((oldProgress) => {
-        if (oldProgress >= 95) return 96;
-        return oldProgress + 4;
+        if (oldProgress >= 95) return 100;
+        return oldProgress + 5;
       });
     }, 100);
 
@@ -51,11 +51,12 @@ export default function Navbar() {
   }, [location.pathname]);
 
   return (
-    <nav className="backdrop-blur-xl shadow-md border bg-primary/10 shadow-primary/40 border-primary hover:border-accent/50 hover:shadow-accent/20 p-2 sticky z-50 mx-auto w-fit rounded-full top-4 flex justify-center items-center overflow-hidden transition-all duration-500 ease-in-out transform translate-y-0">
-      {/* Progress Bar */}
+    <nav
+      className={`backdrop-blur-xl shadow-md border bg-primary/10 shadow-primary/40 border-primary hover:border-accent/50 hover:shadow-accent/20 p-2 sticky z-50 mx-auto w-fit rounded-full top-4 flex justify-center items-center overflow-hidden transition-all duration-500 ease-in-out transform translate-y-0`}
+    >
       {loading && (
         <div
-          className="absolute bottom-0 left-0 h-[1px] bg-accent transition-all duration-200 ease-in-out"
+          className="absolute inset-0  bg-secondary/10  rounded-full transition-all duration-200 ease-in-out"
           style={{ width: `${progress}%` }}
         />
       )}
