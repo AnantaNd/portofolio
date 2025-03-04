@@ -26,7 +26,7 @@ const educations = [
 
 export default function Education() {
   return (
-    <Card>
+    <Card title={"education"}>
       <section>
         <h1 className="text-xl font-semibold text-accent-2 mb-4">Educations</h1>
       </section>

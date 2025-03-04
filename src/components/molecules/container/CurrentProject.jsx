@@ -10,25 +10,27 @@ export default function CurrentProject() {
     { name: "tailwind" },
   ];
   return (
-    <Card>
-      <section>
-        <div className="pb-4">
-          <h1 className="text-xl font-semibold text-accent-2">
-            Current Projects
-          </h1>
-        </div>
-      </section>
-      <section>
-        <div>
-          <GalleryCard
-            imageSrc={"/netcontrol.svg"}
-            title={"NetControl"}
-            desc={"An application to control ONT from long range "}
-            data={netContStack}
-            styleImg={"object-fill"}
-          />
-        </div>
-      </section>
+    <Card title={"current projects"}>
+      <div className="h-72">
+        <section>
+          <div className="pb-4">
+            <h1 className="text-xl font-semibold text-accent-2">
+              Current Projects
+            </h1>
+          </div>
+        </section>
+        <section>
+          <div>
+            <GalleryCard
+              imageSrc={"/netcontrol.svg"}
+              title={"NetControl"}
+              desc={"An application to control ONT from long range "}
+              data={netContStack}
+              styleImg={"object-fill"}
+            />
+          </div>
+        </section>
+      </div>
     </Card>
   );
 }

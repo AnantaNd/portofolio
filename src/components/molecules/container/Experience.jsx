@@ -51,7 +51,7 @@ const experiences = [
 
 export default function Experience() {
   return (
-    <Card>
+    <Card title={"experience"}>
       <section>
         <h1 className="text-xl font-semibold text-accent-2 mb-4">
           Work Experience

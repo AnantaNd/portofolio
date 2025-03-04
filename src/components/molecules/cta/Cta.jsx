@@ -1,4 +1,4 @@
-import { Badge, Chip } from "@material-tailwind/react";
+import { Chip } from "@material-tailwind/react";
 import React from "react";
 import { FaLinkedinIn } from "react-icons/fa";
 import { FaMedium } from "react-icons/fa6";
@@ -10,13 +10,13 @@ import ButtonIcons from "../../atoms/Button/ButtonIcons";
 
 export default function Cta() {
   return (
-    <Card>
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+    <Card title={"profile"}>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:h-72 h-[450px]">
         <section>
           <div className="flex flex-col gap-3 py-3 text-center md:text-left">
             <h1 className="text-3xl md:text-4xl font-bold text-text">
               Hi, I'm{" "}
-              <span className="text-4xl font-extrabold  text-accent-2">
+              <span className="text-4xl font-extrabold text-accent-2">
                 Ananta Noviandanu
               </span>
             </h1>
@@ -44,11 +44,11 @@ export default function Cta() {
           </div>
         </section>
         <section>
-          <div className=" w-32 h-32 object-cover aspect-square backdrop-blur-xl border-4 border-primary/20 rounded-full">
+          <div className=" w-40 h-40 object-cover aspect-square backdrop-blur-xl border-4 border-primary/20 rounded-full">
             <img
               src="/profile.png"
               alt="Ananta Noviandanu"
-              className="rounded-full"
+              className="rounded-full "
             />
           </div>
         </section>

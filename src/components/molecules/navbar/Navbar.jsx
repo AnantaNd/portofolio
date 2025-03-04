@@ -3,9 +3,21 @@ import { FaHome, FaProjectDiagram, FaEnvelope } from "react-icons/fa";
 import { useLocation, Link } from "react-router-dom";
 
 const navItems = [
-  { path: "/", name: "Home", icon: <FaHome /> },
-  { path: "/projects", name: "Projects", icon: <FaProjectDiagram /> },
-  { path: "/contact", name: "Contact", icon: <FaEnvelope /> },
+  {
+    path: "/",
+    name: "Home",
+    icon: <FaHome className="sm:rotate-0 -rotate-90" />,
+  },
+  {
+    path: "/projects",
+    name: "Projects",
+    icon: <FaProjectDiagram className="sm:rotate-0 -rotate-90" />,
+  },
+  {
+    path: "/contact",
+    name: "Contact",
+    icon: <FaEnvelope className="sm:rotate-0 -rotate-90" />,
+  },
 ];
 
 export default function Navbar() {

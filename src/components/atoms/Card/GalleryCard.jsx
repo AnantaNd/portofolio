@@ -23,7 +23,7 @@ export default function GalleryCard({ imageSrc, title, desc, data, styleImg }) {
                 key={i}
                 value={item.name}
                 size="sm"
-                className="bg-accent-2/15 border border-accent-2/20 rounded-full text-sm font-thin capitalize"
+                className="bg-accent-2/15 border border-accent-2/20 rounded-full text-sm font-normal capitalize"
               />
             ))}
         </div>

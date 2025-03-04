@@ -10,10 +10,14 @@ const scrollToTop = () => {
 export default function Layouts() {
   return (
     <>
-      <div className="sticky top-4 z-50">
+      <div className="sticky top-4 z-50 sm:block hidden">
         <Navbar />
       </div>
-      <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 ">
+      <div className="fixed bottom-52 -right-16 rotate-90 z-50 sm:hidden block ">
+        <Navbar />
+      </div>
+
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 ">
         <Outlet />
       </div>
       <div

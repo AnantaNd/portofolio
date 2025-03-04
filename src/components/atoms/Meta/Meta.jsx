@@ -14,7 +14,7 @@ export default function Meta() {
           name="keywords"
           content="Anantano Viandanu, portfolio, web development, programming, design, projects"
         />
-        <meta name="author" content="Anantano Viandanu" />
+        <meta name="author" content="Ananta Noviandanu" />
       </Helmet>
     </>
   );

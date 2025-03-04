@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 export default function About() {
   return (
-    <Card>
+    <Card title={"About"}>
       {/* Header Section */}
       <section className="flex flex-col md:flex-row items-center justify-between gap-6">
         <h1 className="text-xl font-semibold text-accent-2">About Me</h1>
