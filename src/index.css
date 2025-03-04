@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-[#0D0B12];
+}
+
+/* Gradient Overlay */
+body::before {
+  content: "";
+  @apply absolute inset-0 bg-gradient-to-b from-[#0c0912] to-[#523f79] opacity-90;
+}
+
+/* Blurry Shapes */
+body::after {
+  content: "";
+  position: absolute;
+  right: 10%;
+  top: 30%;
+  width: 20rem;
+  height: 20rem;
+  background-color: rgba(
+    128,
+    90,
+    213,
+    0.4
+  ); /* Warna ungu (purple-700) dengan opacity */
+  filter: blur(100px);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+/* Tambahan Blur di Bagian Bawah */
+body::before {
+  content: "";
+  position: absolute;
+  bottom: 10%;
+  left: 25%;
+  width: 24rem;
+  height: 24rem;
+  background-color: rgba(
+    91,
+    33,
+    182,
+    0.3
+  ); /* Warna ungu gelap (purple-900) dengan opacity */
+  filter: blur(120px);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  body::after {
+    width: 15rem;
+    height: 15rem;
+    right: 5%;
+    top: 25%;
+  }
+
+  body::before {
+    width: 18rem;
+    height: 18rem;
+    bottom: 15%;
+    left: 20%;
+  }
+}
+
+@media (max-width: 768px) {
+  body::after {
+    width: 10rem;
+    height: 10rem;
+    right: 2%;
+    top: 20%;
+  }
+
+  body::before {
+    width: 12rem;
+    height: 12rem;
+    bottom: 20%;
+    left: 15%;
+  }
+}
+
+@media (max-width: 480px) {
+  body::after {
+    width: 8rem;
+    height: 8rem;
+    right: 1%;
+    top: 15%;
+  }
+
+  body::before {
+    width: 10rem;
+    height: 10rem;
+    bottom: 25%;
+    left: 10%;
+  }
+}
