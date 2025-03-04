@@ -1,38 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaTimes, FaMinus, FaExpandAlt } from "react-icons/fa";
 
-export default function Card({ children, title }) {
+export default function Card({ children, title, hide }) {
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isClosed, setIsClosed] = useState(false);
+
+  useEffect(() => {
+    if (isClosed) {
+      const timer = setTimeout(() => {
+        setIsClosed(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isClosed]);
 
   return (
-    <div className="mx-auto bg-primary/10 backdrop-blur-2xl border border-primary/20 rounded-[2.5rem] p-6 md:p-10 shadow-md shadow-primary/40 transition-all duration-300">
+    <div
+      className={`mx-auto bg-primary/10 backdrop-blur-2xl border border-primary/20 rounded-[2.5rem] p-6 md:p-10 shadow-md shadow-primary/40 transition-all duration-300 ${
+        isClosed ? "animate-glass-break" : ""
+      }`}
+    >
       <section>
-        <div className="flex items-center space-x-2 px-2 pb-4">
-          <div className="relative w-[14px] h-[14px] bg-red-500 rounded-full cursor-pointer group">
-            <FaTimes
-              className="absolute inset-0 m-auto text-background opacity-0 group-hover:opacity-100"
-              size={10}
-            />
+        {!hide && (
+          <div className="flex items-center space-x-2 px-2 pb-4">
+            <div
+              className="relative w-[14px] h-[14px] bg-red-500 rounded-full cursor-pointer group"
+              onClick={() => setIsClosed(true)}
+            >
+              <FaTimes
+                className="absolute inset-0 m-auto text-background opacity-0 group-hover:opacity-100"
+                size={10}
+              />
+            </div>
+            <div
+              className="relative w-[14px] h-[14px] bg-yellow-500 rounded-full cursor-pointer group"
+              onClick={() => setIsMinimized(true)}
+            >
+              <FaMinus
+                className="absolute inset-0 m-auto text-background opacity-0 group-hover:opacity-100"
+                size={10}
+              />
+            </div>
+            <div
+              className="relative w-[14px] h-[14px] bg-green-500 rounded-full cursor-pointer group"
+              onClick={() => setIsMinimized(false)}
+            >
+              <FaExpandAlt
+                className="absolute inset-0 m-auto text-background opacity-0 group-hover:opacity-100"
+                size={10}
+              />
+            </div>
           </div>
-          <div
-            className="relative w-[14px] h-[14px] bg-yellow-500 rounded-full cursor-pointer group"
-            onClick={() => setIsMinimized(true)}
-          >
-            <FaMinus
-              className="absolute inset-0 m-auto text-background opacity-0 group-hover:opacity-100"
-              size={10}
-            />
-          </div>
-          <div
-            className="relative w-[14px] h-[14px] bg-green-500 rounded-full cursor-pointer group"
-            onClick={() => setIsMinimized(false)}
-          >
-            <FaExpandAlt
-              className="absolute inset-0 m-auto text-background opacity-0 group-hover:opacity-100"
-              size={10}
-            />
-          </div>
-        </div>
+        )}
       </section>
       <section>
         <div

@@ -10,7 +10,7 @@ export default function CurrentProject() {
     { name: "tailwind" },
   ];
   return (
-    <Card title={"current projects"}>
+    <Card title={"current projects"} hide={true}>
       <div className="h-72">
         <section>
           <div className="pb-4">

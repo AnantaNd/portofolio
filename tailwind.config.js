@@ -12,6 +12,15 @@ module.exports = withMT({
         accent: "#FFB433",
         "accent-2": "#FFA700",
       },
+      keyframes: {
+        "glass-break": {
+          "0%": { transform: "scale(1)", opacity: 1 },
+          "100%": { transform: "scale(0.9)", opacity: 0 },
+        },
+      },
+      animation: {
+        "glass-break": "glass-break 0.5s ease-out forwards",
+      },
     },
   },
   plugins: [],
