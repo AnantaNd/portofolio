@@ -18,19 +18,14 @@ export default function Highlight() {
       <div className="md:h-[275px] h-auto">
         <section>
           <div className="pb-4">
-            <h1 className="text-xl font-semibold text-accent-2">Highlight</h1>
+            <h1 className="text-xl font-semibold text-accent-2">Netcontrol</h1>
           </div>
         </section>
         <section>
           <SimpleCard>
             <div className="flex flex-col gap-3">
               <section>
-                <div className="flex flex-row justify-between items-center gap-6">
-                  <h1 className="text-lg text-accent-2">NetControl</h1>
-                </div>
-              </section>
-              <section>
-                <div className="flex flex-wrap gap-2 py-2">
+                <div className="flex flex-wrap gap-1 py-2">
                   {netContStack &&
                     netContStack.map((item, i) => (
                       <Chip
@@ -44,7 +39,7 @@ export default function Highlight() {
               </section>
               <section>
                 <div className="text-text-2 text-sm pb-2">
-                  <ol className="list-decimal list-inside space-y-2">
+                  <ol className="list-decimal list-inside space-y-1">
                     <li>
                       Developed a remote ONT control system using Vue.js with
                       MQTT for real-time communication
