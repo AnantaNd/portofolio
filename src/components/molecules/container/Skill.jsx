@@ -38,7 +38,7 @@ const skills = [
   {
     name: "Tailwind CSS",
     icon: <SiTailwindcss size={20} />,
-    progress: 90,
+    progress: 100,
   },
 ];
 

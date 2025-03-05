@@ -78,7 +78,7 @@ export default function Home() {
       </section>
       <section>
         <div
-          className={`fixed left-4 top-[50%] transform -translate-y-1/2 bg-primary/10 backdrop-blur-sm border border-primary/20 rounded-full p-2 ${
+          className={`fixed right-4 top-[45%] transform -translate-y-1/2 bg-primary/10 border border-primary/20 rounded-full sm:px-2 px-3 py-2 ${
             isAbout && isSkill && isExp && isEdu ? "hidden" : ""
           }`}
         >

@@ -17,7 +17,7 @@ export default function Projects() {
   }
   return (
     <main
-      className={`py-4 flex flex-col gap-6 transition-opacity duration-1000 ${
+      className={`py-4 flex flex-col gap-6 transition-opacity duration-1000 min-h-screen ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
