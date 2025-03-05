@@ -42,9 +42,9 @@ const skills = [
   },
 ];
 
-export default function Skill() {
+export default function Skill({ title, onClose, isClose }) {
   return (
-    <Card title={"skills"}>
+    <Card title={title} onClose={onClose} isClosed={isClose}>
       <section>
         <h1 className="text-xl font-semibold text-accent-2 pb-3">Skills</h1>
       </section>

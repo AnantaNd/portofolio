@@ -56,7 +56,7 @@ export default function Navbar() {
     >
       {loading && (
         <div
-          className="absolute inset-0  bg-secondary/10  rounded-full transition-all duration-200 ease-in-out"
+          className="absolute inset-0  bg-secondary/10 border border-secondary/40  rounded-full transition-all duration-200 ease-in-out "
           style={{ width: `${progress}%` }}
         />
       )}

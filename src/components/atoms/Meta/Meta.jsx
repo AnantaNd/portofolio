@@ -5,7 +5,7 @@ export default function Meta() {
   return (
     <>
       <Helmet>
-        <title>Ananta Noviandanu | Portfolio</title>
+        <title>Ananta Noviandanu</title>
         <meta
           name="description"
           content="Ananta Noviandanu's portfolio showcasing projects and skills in web development, design, and programming."

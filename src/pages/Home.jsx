@@ -5,10 +5,19 @@ import Skill from "../components/molecules/container/Skill";
 import Education from "../components/molecules/container/Education";
 import CurrentProject from "../components/molecules/container/CurrentProject";
 import Experience from "../components/molecules/container/Experience";
+import ButtonIcons from "../components/atoms/Button/ButtonIcons";
+import { FaPerson } from "react-icons/fa6";
+import { BiLogoVisualStudio } from "react-icons/bi";
+import { MdWorkHistory } from "react-icons/md";
+import { IoMdSchool } from "react-icons/io";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+  const [isAbout, setIsAbout] = useState(true);
+  const [isSkill, setIsSkill] = useState(true);
+  const [isExp, setIsExp] = useState(true);
+  const [isEdu, setIsEdu] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -24,7 +33,7 @@ export default function Home() {
 
   return (
     <main
-      className={`py-4 flex flex-col gap-6 transition-opacity duration-1000 ${
+      className={`py-4 flex flex-col gap-6 transition-opacity duration-1000 min-h-screen ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
@@ -38,17 +47,68 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <section>
-        <About />
+
+      <section className={isAbout ? "" : "hidden"}>
+        <About
+          title={"about"}
+          isClose={isAbout}
+          onClose={() => setIsAbout(false)}
+        />
+      </section>
+      <section className={isSkill ? "" : "hidden"}>
+        <Skill
+          title={"skills"}
+          isClose={isSkill}
+          onClose={() => setIsSkill(false)}
+        />
+      </section>
+      <section className={isExp ? "" : "hidden"}>
+        <Experience
+          title={"experiences"}
+          isClose={isExp}
+          onClose={() => setIsExp(false)}
+        />
+      </section>
+      <section className={isEdu ? "" : "hidden"}>
+        <Education
+          title={"educations"}
+          isClose={isEdu}
+          onClose={() => setIsEdu(false)}
+        />
       </section>
       <section>
-        <Skill />
-      </section>
-      <section>
-        <Experience />
-      </section>
-      <section>
-        <Education />
+        <div
+          className={`fixed left-4 top-[50%] transform -translate-y-1/2 bg-primary/10 backdrop-blur-sm border border-primary/20 rounded-full p-2 ${
+            isAbout && isSkill && isExp && isEdu ? "hidden" : ""
+          }`}
+        >
+          <div className="flex flex-col gap-2 items-center">
+            <div className={isAbout ? "hidden" : ""}>
+              <ButtonIcons
+                onClick={() => setIsAbout(true)}
+                icon={<FaPerson size={20} />}
+              />
+            </div>
+            <div className={isSkill ? "hidden" : ""}>
+              <ButtonIcons
+                onClick={() => setIsSkill(true)}
+                icon={<BiLogoVisualStudio size={20} />}
+              />
+            </div>
+            <div className={isExp ? "hidden" : ""}>
+              <ButtonIcons
+                onClick={() => setIsExp(true)}
+                icon={<MdWorkHistory size={20} />}
+              />
+            </div>
+            <div className={isEdu ? "hidden" : ""}>
+              <ButtonIcons
+                onClick={() => setIsEdu(true)}
+                icon={<IoMdSchool size={20} />}
+              />
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   );

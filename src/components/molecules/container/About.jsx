@@ -4,9 +4,9 @@ import ButtonPrimary from "../../atoms/Button/ButtonPrimary";
 import { FaDownload } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-export default function About() {
+export default function About({ title, onClose, isClose }) {
   return (
-    <Card title={"About"}>
+    <Card title={title} onClose={onClose} isClosed={isClose}>
       {/* Header Section */}
       <section className="flex flex-col md:flex-row items-center justify-between gap-6">
         <h1 className="text-xl font-semibold text-accent-2">About Me</h1>

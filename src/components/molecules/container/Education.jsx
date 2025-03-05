@@ -24,9 +24,9 @@ const educations = [
   },
 ];
 
-export default function Education() {
+export default function Education({ title, onClose, isClose }) {
   return (
-    <Card title={"education"}>
+    <Card title={title} onClose={onClose} isClosed={isClose}>
       <section>
         <h1 className="text-xl font-semibold text-accent-2 mb-4">Educations</h1>
       </section>

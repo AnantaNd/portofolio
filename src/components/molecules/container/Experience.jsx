@@ -49,9 +49,9 @@ const experiences = [
   },
 ];
 
-export default function Experience() {
+export default function Experience({ title, onClose, isClose }) {
   return (
-    <Card title={"experience"}>
+    <Card title={title} onClose={onClose} isClosed={isClose}>
       <section>
         <h1 className="text-xl font-semibold text-accent-2 mb-4">
           Work Experience
