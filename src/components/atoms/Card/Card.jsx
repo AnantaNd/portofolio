@@ -58,8 +58,9 @@ export default function Card({ children, title, hide, isClosed, onClose }) {
             className={`transition-all duration-500 ease-in-out overflow-hidden ${
               !isMinimized ? "max-h-0  opacity-0" : "max-h-fit  opacity-100"
             }`}
+            onClick={() => setIsMinimized(false)}
           >
-            <h1 className="text-accent-2 text-xl font-semibold capitalize ">
+            <h1 className="text-accent-2 text-xl font-semibold capitalize">
               {title}
             </h1>
           </div>

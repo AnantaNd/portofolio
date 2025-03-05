@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import CTAV2 from "../components/molecules/cta/CTAV2";
 
 export default function Projects() {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,7 +14,7 @@ export default function Projects() {
   }, []);
 
   if (isLoading) {
-    return <div className="max-h-svh"></div>;
+    return <div className="min-h-svh"></div>;
   }
   return (
     <main
@@ -23,9 +24,12 @@ export default function Projects() {
     >
       <section>
         <div className="flex justify-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-accent-2">
-            Projects
-          </h1>
+          <CTAV2
+            title={"Check Out What I've Been Up To"}
+            desc={
+              "Hey there! Take a look at some of the cool projects I've been working on lately. From fun experiments to serious builds, see what I've been up to and get a feel for my creative process."
+            }
+          />
         </div>
       </section>
     </main>

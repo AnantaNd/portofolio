@@ -13,7 +13,7 @@ export default function Contact() {
   }, []);
 
   if (isLoading) {
-    return <div className="max-h-svh"></div>;
+    return <div className="min-h-svh"></div>;
   }
   return (
     <main

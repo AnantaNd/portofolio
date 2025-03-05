@@ -28,7 +28,7 @@ export default function Home() {
   }, []);
 
   if (isLoading) {
-    return <div className="max-h-svh"></div>;
+    return <div className="min-h-svh"></div>;
   }
 
   return (

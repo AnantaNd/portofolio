@@ -9,6 +9,7 @@ module.exports = withMT({
         background: "#0c0912",
         primary: "#523f79",
         secondary: "#807be4",
+        tenary: "#01A9F4",
         accent: "#FFB433",
         "accent-2": "#FFA700",
       },
