@@ -18,13 +18,13 @@ const Timeline = ({ events }) => {
                   {event.name}
                 </a>
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-text-2">
                 {event.role} {event.type}
               </p>
             </div>
             <div className="flex flex-col sm:items-end items-start sm:gap-1 gap-0">
-              <p className="text-sm text-gray-500">{event.duration}</p>
-              <p className="text-sm text-gray-500">{event.location}</p>
+              <p className="text-sm text-text-2">{event.duration}</p>
+              <p className="text-sm text-text-2">{event.location}</p>
             </div>
           </div>
           {event.descriptions && (

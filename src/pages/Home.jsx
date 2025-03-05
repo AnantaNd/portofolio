@@ -38,11 +38,11 @@ export default function Home() {
       }`}
     >
       <section>
-        <div className="flex flex-row items-center gap-6 lg:flex-nowrap flex-wrap">
-          <div className="w-full">
+        <div className="flex flex-row flex-wrap gap-6 lg:flex-nowrap">
+          <div className="w-full lg:w-1/2">
             <Cta />
           </div>
-          <div className="w-full">
+          <div className="w-full lg:w-1/2">
             <Highlight />
           </div>
         </div>

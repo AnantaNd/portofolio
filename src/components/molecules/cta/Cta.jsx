@@ -11,7 +11,7 @@ import ButtonIcons from "../../atoms/Button/ButtonIcons";
 export default function Cta() {
   return (
     <Card hide={true}>
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:h-72 h-[450px]">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:h-[275px] h-[450px]">
         <section>
           <div className="flex flex-col gap-3 py-3 text-center md:text-left">
             <h1 className="text-3xl md:text-4xl font-bold text-text">

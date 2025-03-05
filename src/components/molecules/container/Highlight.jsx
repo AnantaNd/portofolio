@@ -15,7 +15,7 @@ export default function Highlight() {
   ];
   return (
     <Card title={"Highlight"} hide={true}>
-      <div className="h-72">
+      <div className="md:h-[275px] h-auto">
         <section>
           <div className="pb-4">
             <h1 className="text-xl font-semibold text-accent-2">Highlight</h1>
@@ -27,33 +27,24 @@ export default function Highlight() {
               <section>
                 <div className="flex flex-row justify-between items-center gap-6">
                   <h1 className="text-lg text-accent-2">NetControl</h1>
-                  <ButtonIcons
-                    icon={
-                      <img
-                        src="/netcontrol.svg"
-                        alt="logo"
-                        className="w-fit h-8 object-center"
-                      />
-                    }
-                  />
                 </div>
               </section>
               <section>
-                <div className="flex flex-row gap-2 flex-wrap py-2">
+                <div className="flex flex-wrap gap-2 py-2">
                   {netContStack &&
                     netContStack.map((item, i) => (
                       <Chip
                         key={i}
                         value={item.name}
                         size="sm"
-                        className="bg-accent-2/15 border border-accent-2/20 rounded-full text-xs font-normal capitalize"
+                        className="bg-accent-2/15 border border-accent-2/20 rounded-full text-xs font-normal"
                       />
                     ))}
                 </div>
               </section>
               <section>
-                <div className=" text-text text-xs pb-2">
-                  <ol className="list-decimal  list-inside space-y-2 ">
+                <div className="text-text-2 text-sm pb-2">
+                  <ol className="list-decimal list-inside space-y-2">
                     <li>
                       Developed a remote ONT control system using Vue.js with
                       MQTT for real-time communication
