@@ -3,7 +3,7 @@ import Cta from "../components/molecules/cta/Cta";
 import About from "../components/molecules/container/About";
 import Skill from "../components/molecules/container/Skill";
 import Education from "../components/molecules/container/Education";
-import CurrentProject from "../components/molecules/container/CurrentProject";
+import Highlight from "../components/molecules/container/Highlight";
 import Experience from "../components/molecules/container/Experience";
 import ButtonIcons from "../components/atoms/Button/ButtonIcons";
 import { FaPerson } from "react-icons/fa6";
@@ -43,7 +43,7 @@ export default function Home() {
             <Cta />
           </div>
           <div className="w-full">
-            <CurrentProject />
+            <Highlight />
           </div>
         </div>
       </section>

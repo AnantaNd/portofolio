@@ -7,7 +7,13 @@ import { TbBrandJavascript } from "react-icons/tb";
 
 import Card from "../../atoms/Card/Card";
 import Sliders from "../Sliders/Slider";
-import { SiTailwindcss } from "react-icons/si";
+import {
+  SiInfluxdb,
+  SiStorybook,
+  SiTailwindcss,
+  SiZigbee2Mqtt,
+} from "react-icons/si";
+import { BsRouterFill } from "react-icons/bs";
 
 const skills = [
   {
@@ -39,6 +45,26 @@ const skills = [
     name: "Tailwind CSS",
     icon: <SiTailwindcss size={20} />,
     progress: 100,
+  },
+  {
+    name: "Web Socket",
+    icon: <SiZigbee2Mqtt size={20} />,
+    progress: 80,
+  },
+  {
+    name: "Influx Db",
+    icon: <SiInfluxdb size={20} />,
+    progress: 60,
+  },
+  {
+    name: "TR-069",
+    icon: <BsRouterFill size={20} />,
+    progress: 60,
+  },
+  {
+    name: "Storybook",
+    icon: <SiStorybook size={20} />,
+    progress: 60,
   },
 ];
 

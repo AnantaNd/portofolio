@@ -52,7 +52,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`backdrop-blur-sm sm:backdrop-blur-xl shadow-md border bg-primary/10 shadow-primary/40 border-primary hover:border-accent/50 hover:shadow-accent/20 p-2 sticky z-50 mx-auto w-fit rounded-full top-8 flex justify-center items-center overflow-hidden transition-all duration-500 ease-in-out transform translate-y-0`}
+      className={`backdrop-blur-none sm:backdrop-blur-xl shadow-md border bg-primary/10 shadow-primary/40 border-primary hover:border-accent/50 hover:shadow-accent/20 p-2 sticky z-50 mx-auto w-fit rounded-full top-8 flex justify-center items-center overflow-hidden transition-all duration-500 ease-in-out transform translate-y-0`}
     >
       {loading && (
         <div

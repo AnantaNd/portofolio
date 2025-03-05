@@ -10,6 +10,14 @@ const experiences = [
     duration: "Oct 2023 - Present • 1 yr 6 mos",
     location: "Jakarta, Indonesia • On-site",
     homepage: "https://www.varnion.com",
+    descriptions: [
+      "Developed a remote ONT control system using Vue.js with MQTT for real-time communication.",
+      "Implemented reusable React/Vue components, reducing development time by 30%",
+      "Improved network device control UI, reducing response time by 40%",
+      "Collaborated with backend teams to optimize API calls for TR-069 provisioning.",
+      "Collaborated and optimized InfluxDB queries for time-series data analytics",
+      "Enhanced application security by implementing JWT authentication and role-based access control (RBAC)",
+    ],
     skills: [
       "React.Js",
       "Redux.Js",
