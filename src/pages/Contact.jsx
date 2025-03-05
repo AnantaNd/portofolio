@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import CtaV2 from "../components/molecules/cta/CtaV2";
 
 export default function Contact() {
   const [isLoading, setIsLoading] = useState(true);
@@ -21,13 +22,14 @@ export default function Contact() {
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
-      <section>
-        <div className="flex justify-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-accent-2">
-            Contacts
-          </h1>
-        </div>
-      </section>
+      <CtaV2
+        hide={false}
+        title={"Keep in Touch"}
+        desc={
+          "Hey there! I'd love to hear from you. Whether you have a question, a project idea, or just want to say hi, feel free. Let's connect and see where our conversation takes us!"
+        }
+      />
+      <section></section>
     </main>
   );
 }
