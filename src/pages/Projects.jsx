@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import CtaV2 from "../components/molecules/cta/CtaV2";
+import CTAV2 from "../components/molecules/cta/CTAV2";
 
 export default function Projects() {
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +24,7 @@ export default function Projects() {
     >
       <section>
         <div className="flex justify-center">
-          <CtaV2
+          <CTAV2
             title={"Check Out What I've Been Up To"}
             desc={
               "Hey there! Take a look at some of the cool projects I've been working on lately. From fun experiments to serious builds, see what I've been up to and get a feel for my creative process."

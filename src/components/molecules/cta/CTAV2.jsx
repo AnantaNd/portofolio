@@ -4,7 +4,7 @@ import ButtonPrimary from "../../atoms/Button/ButtonPrimary";
 import { FaGithub } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-export default function CtaV2({ title, desc, hide = true }) {
+export default function CTAV2({ title, desc, hide = true }) {
   return (
     <main className="border-b border-secondary/20 py-4 pb-8">
       <div className="flex flex-col items-center justify-center gap-4">

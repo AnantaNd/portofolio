@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import CtaV2 from "../components/molecules/cta/CtaV2";
+import CTAV2 from "../components/molecules/cta/CTAV2";
 
 export default function Contact() {
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +22,7 @@ export default function Contact() {
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
-      <CtaV2
+      <CTAV2
         hide={false}
         title={"Keep in Touch"}
         desc={
