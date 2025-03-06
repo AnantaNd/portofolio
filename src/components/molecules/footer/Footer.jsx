@@ -1,8 +1,9 @@
 import React from "react";
-import { FaGithub, FaLinkedinIn } from "react-icons/fa";
+import { FaLinkedinIn } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import ButtonIcons from "../../atoms/Button/ButtonIcons";
 import { FaMedium } from "react-icons/fa6";
+import { PiGithubLogoFill } from "react-icons/pi";
 
 export default function Footer() {
   return (
@@ -23,7 +24,7 @@ export default function Footer() {
             <ButtonIcons icon={<FaLinkedinIn size={20} />} />
           </Link>
           <Link to="https://github.com/AnantaNd" target="_blank">
-            <ButtonIcons icon={<FaGithub size={20} />} />
+            <ButtonIcons icon={<PiGithubLogoFill size={20} />} />
           </Link>
           <Link to="https://medium.com/@nantd" target="_blank">
             <ButtonIcons icon={<FaMedium size={20} />} />

@@ -15,7 +15,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [isAbout, setIsAbout] = useState(true);
-  const [isSkill, setIsSkill] = useState(true);
+  const [isSkill, setIsSkill] = useState(false);
   const [isExp, setIsExp] = useState(true);
   const [isEdu, setIsEdu] = useState(true);
 
@@ -25,6 +25,31 @@ export default function Home() {
       setIsVisible(true);
     }, 1000);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleSmoothScroll = (event) => {
+      event.preventDefault();
+      const targetId = event.currentTarget.getAttribute("href").slice(1);
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        window.scrollTo({
+          top: targetElement.offsetTop,
+          behavior: "smooth",
+        });
+      }
+    };
+
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach((link) => {
+      link.addEventListener("click", handleSmoothScroll);
+    });
+
+    return () => {
+      links.forEach((link) => {
+        link.removeEventListener("click", handleSmoothScroll);
+      });
+    };
   }, []);
 
   if (isLoading) {
@@ -48,28 +73,28 @@ export default function Home() {
         </div>
       </section>
 
-      <section className={isAbout ? "" : "hidden"}>
+      <section className={isAbout ? "" : "hidden"} id="about">
         <About
           title={"about"}
           isClose={isAbout}
           onClose={() => setIsAbout(false)}
         />
       </section>
-      <section className={isSkill ? "" : "hidden"}>
+      <section className={isSkill ? "" : "hidden"} id="skill">
         <Skill
           title={"skills"}
           isClose={isSkill}
           onClose={() => setIsSkill(false)}
         />
       </section>
-      <section className={isExp ? "" : "hidden"}>
+      <section className={isExp ? "" : "hidden"} id="exp">
         <Experience
           title={"experiences"}
           isClose={isExp}
           onClose={() => setIsExp(false)}
         />
       </section>
-      <section className={isEdu ? "" : "hidden"}>
+      <section className={isEdu ? "" : "hidden"} id="edu">
         <Education
           title={"educations"}
           isClose={isEdu}
@@ -84,28 +109,36 @@ export default function Home() {
         >
           <div className="flex flex-col gap-2 items-center">
             <div className={isAbout ? "hidden" : ""}>
-              <ButtonIcons
-                onClick={() => setIsAbout(true)}
-                icon={<FaPerson size={20} />}
-              />
+              <a href="#about">
+                <ButtonIcons
+                  onClick={() => setIsAbout(true)}
+                  icon={<FaPerson size={20} />}
+                />
+              </a>
             </div>
             <div className={isSkill ? "hidden" : ""}>
-              <ButtonIcons
-                onClick={() => setIsSkill(true)}
-                icon={<BiLogoVisualStudio size={20} />}
-              />
+              <a href="#skill">
+                <ButtonIcons
+                  onClick={() => setIsSkill(true)}
+                  icon={<BiLogoVisualStudio size={20} />}
+                />
+              </a>
             </div>
             <div className={isExp ? "hidden" : ""}>
-              <ButtonIcons
-                onClick={() => setIsExp(true)}
-                icon={<MdWorkHistory size={20} />}
-              />
+              <a href="#exp">
+                <ButtonIcons
+                  onClick={() => setIsExp(true)}
+                  icon={<MdWorkHistory size={20} />}
+                />
+              </a>
             </div>
             <div className={isEdu ? "hidden" : ""}>
-              <ButtonIcons
-                onClick={() => setIsEdu(true)}
-                icon={<IoMdSchool size={20} />}
-              />
+              <a href="#edu">
+                <ButtonIcons
+                  onClick={() => setIsEdu(true)}
+                  icon={<IoMdSchool size={20} />}
+                />
+              </a>
             </div>
           </div>
         </div>

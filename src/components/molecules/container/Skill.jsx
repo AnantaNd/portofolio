@@ -9,11 +9,13 @@ import Card from "../../atoms/Card/Card";
 import Sliders from "../Sliders/Slider";
 import {
   SiInfluxdb,
+  SiJira,
   SiStorybook,
   SiTailwindcss,
   SiZigbee2Mqtt,
 } from "react-icons/si";
 import { BsRouterFill } from "react-icons/bs";
+import { GiGiantSquid } from "react-icons/gi";
 
 const skills = [
   {
@@ -31,16 +33,7 @@ const skills = [
     icon: <FaVuejs size={20} />,
     progress: 80,
   },
-  {
-    name: "Node.js",
-    icon: <FaNodeJs size={20} />,
-    progress: 85,
-  },
-  {
-    name: "Figma",
-    icon: <FaFigma size={20} />,
-    progress: 78,
-  },
+
   {
     name: "Tailwind CSS",
     icon: <SiTailwindcss size={20} />,
@@ -50,6 +43,16 @@ const skills = [
     name: "Web Socket",
     icon: <SiZigbee2Mqtt size={20} />,
     progress: 80,
+  },
+  {
+    name: "Node.js",
+    icon: <FaNodeJs size={20} />,
+    progress: 85,
+  },
+  {
+    name: "Figma",
+    icon: <FaFigma size={20} />,
+    progress: 78,
   },
   {
     name: "Influx Db",
@@ -65,6 +68,16 @@ const skills = [
     name: "Storybook",
     icon: <SiStorybook size={20} />,
     progress: 60,
+  },
+  {
+    name: "Jest Dom",
+    icon: <GiGiantSquid size={20} />,
+    progress: 60,
+  },
+  {
+    name: "Jira",
+    icon: <SiJira size={20} />,
+    progress: 50,
   },
 ];
 

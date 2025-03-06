@@ -38,9 +38,20 @@ const experiences = [
     homepage: "https://www.telkom.co.id",
     descriptions: [
       "I am entering the second stage of the Join Development Program as a Frontend Developer based on the project at Telkom Indonesia (LPE).",
-      "I work such as implementing designs and concepts.",
+      "Collaborated with backend teams for develope apps Loyalty Point Exchange.",
+      "I work such as implementing designs system and concepts.",
+      "Implemented reusable React components and React Redux, reducing development time by 45%",
+      "Implemented comprehensive unit testing with Jest DOM, covering key UI interactions and component behaviors, resulting in a more stable and maintainable codebase",
+      "Utilized Jira for agile project management, tracking tasks, and managing sprints to optimize development workflow.",
     ],
-    skills: ["React.Js", "Redux.Js", "Material UI", "Node.js", "Jest Dom"],
+    skills: [
+      "React.Js",
+      "Redux.Js",
+      "Material UI",
+      "Node.js",
+      "Jest Dom",
+      "Jira",
+    ],
   },
   {
     name: "Telkom Indonesia",

@@ -60,7 +60,6 @@ export default function Navbar() {
           style={{ width: `${progress}%` }}
         />
       )}
-
       <ul className="flex gap-6 items-center justify-center">
         {navItems.map((item, index) => (
           <li key={index} className="uppercase flex items-center">

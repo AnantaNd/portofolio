@@ -23,7 +23,6 @@ export default function About({ title, onClose, isClose }) {
           />
         </Link>
       </section>
-
       {/* Description Section */}
       <section className="mt-4">
         <div className="">
