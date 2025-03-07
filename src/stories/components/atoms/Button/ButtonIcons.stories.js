@@ -3,7 +3,7 @@ import ButtonIcons from "../../../../components/atoms/Button/ButtonIcons";
 import { FaPlus, FaTrash } from "react-icons/fa";
 
 export default {
-  title: "components/atoms/Button/ButtonIcons",
+  title: "components/atoms/button/ButtonIcons",
   component: ButtonIcons,
   tags: ["autodocs"],
   argTypes: {

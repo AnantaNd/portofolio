@@ -1,27 +1,20 @@
 import { FaSave } from "react-icons/fa";
 import ButtonPrimary from "../../../../components/atoms/Button/ButtonPrimary";
 
-import { MdCancel } from "react-icons/md";
-
 export default {
-  title: "components/atoms/Button/ButtonPrimary",
+  title: "components/atoms/button/ButtonPrimary",
   components: ButtonPrimary,
   tags: ["autodocs"],
   argTypes: {
-    icon: { control: "none" },
+    icon: { control: "icon" },
     title: { control: "none" },
     onClick: { action: "clicked" },
   },
 };
 
 const Template = (args) => <ButtonPrimary {...args} />;
-export const SubmitButtons = Template.bind({});
-SubmitButtons.args = {
+export const Default = Template.bind({});
+Default.args = {
   icon: <FaSave />,
   title: "submit",
-};
-export const CancelButtons = Template.bind({});
-CancelButtons.args = {
-  icon: <MdCancel />,
-  title: "cancel",
 };

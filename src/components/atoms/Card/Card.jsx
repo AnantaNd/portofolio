@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { FaTimes, FaMinus, FaExpandAlt } from "react-icons/fa";
 
-export default function Card({ children, title, hide, isClosed, onClose }) {
+export default function Card({ children, title, hide, onClose }) {
   const [isMinimized, setIsMinimized] = useState(false);
-  // const [isClosed, setIsClosed] = useState(false);
 
   return (
     <>
@@ -51,7 +50,7 @@ export default function Card({ children, title, hide, isClosed, onClose }) {
                 : "max-h-fit scale-y-100 opacity-100"
             }`}
           >
-            {children}
+            {children && <div>{children}</div>}
           </div>
 
           <div
