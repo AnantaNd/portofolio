@@ -1,13 +1,19 @@
 const withMT = require("@material-tailwind/react/utils/withMT");
 
 module.exports = withMT({
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  // content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./storybook/**/*.{js,jsx,ts,tsx}",
+    "./node_modules/@material-tailwind/react/components/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/@material-tailwind/react/theme/components/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {
       colors: {
-        text: "#f6f5f8",
-        "text-2": "#9e9e9e",
-        background: "#0c0912",
+        text: "#ffffff",
+        "text-2": "#b0b0b0",
+        background: "#141221",
         primary: "#523f79",
         secondary: "#807be4",
         tenary: "#01A9F4",
