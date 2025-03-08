@@ -1,14 +1,14 @@
 import { Chip } from "@material-tailwind/react";
 import React from "react";
 
-export default function GalleryCard({ imageSrc, title, desc, data, styleImg }) {
+export default function GalleryCard({ imageSrc, title, desc, data }) {
   return (
     <div className="mx-auto bg-primary/5 border border-primary/20 rounded-3xl relative backdrop-filter backdrop-blur-lg overflow-hidden shadow-lg">
       <div className="p-4">
         <img
           src={imageSrc}
           alt={title}
-          className={`w-full h-20 ${styleImg} rounded-t-2xl`}
+          className={`w-full h-20  rounded-t-2xl`}
         />
       </div>
       <div className="p-4">

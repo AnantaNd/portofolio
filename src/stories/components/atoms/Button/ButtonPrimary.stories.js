@@ -6,8 +6,8 @@ export default {
   components: ButtonPrimary,
   tags: ["autodocs"],
   argTypes: {
-    icon: { control: "icon" },
-    title: { control: "none" },
+    icon: { control: "none" },
+    title: { control: "text" },
     onClick: { action: "clicked" },
   },
 };

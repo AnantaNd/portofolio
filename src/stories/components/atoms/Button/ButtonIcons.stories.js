@@ -16,10 +16,10 @@ const Template = (args) => <ButtonIcons {...args} />;
 
 export const AddButton = Template.bind({});
 AddButton.args = {
-  icon: <FaPlus className="text-lg" />, // Icon tambah
+  icon: <FaPlus className="text-lg" />,
 };
 
 export const DeleteButton = Template.bind({});
 DeleteButton.args = {
-  icon: <FaTrash className="text-lg text-red-500" />, // Icon hapus
+  icon: <FaTrash className="text-lg text-red-500" />,
 };
