@@ -9,8 +9,8 @@ const navItems = [
     icon: <FaCampground className="sm:rotate-0 -rotate-90" />,
   },
   {
-    path: "/projects",
-    name: "Projects",
+    path: "/showcase",
+    name: "Showcase",
     icon: <FaProjectDiagram className="sm:rotate-0 -rotate-90" />,
   },
   {
