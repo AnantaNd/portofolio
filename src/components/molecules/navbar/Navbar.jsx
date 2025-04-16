@@ -60,6 +60,9 @@ export default function Navbar() {
           style={{ width: `${progress}%` }}
         />
       )}
+      <div className="bg-white border border-secondary/30 transition-all  shadow-md hover:shadow-lg rounded-full p-1 sm:block hidden mr-4">
+        <img src="/Troll-Face.svg" className="w-6 h-6 " alt="logo" />
+      </div>
       <ul className="flex gap-6 items-center justify-center">
         {navItems.map((item, index) => (
           <li key={index} className="uppercase flex items-center">
