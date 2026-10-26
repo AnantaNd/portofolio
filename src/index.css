@@ -1,221 +1,244 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 :root {
-  --primary: 72, 52, 150; /* Lebih dalam dan elegan */
-  --secondary: 110, 105, 220; /* Sedikit lebih lembut dari sebelumnya */
-  --accent: 219, 90, 132; /* Pink elegan, soft tapi tetap kontras */
-  --accent-2: 190, 60, 110; /* Pink lebih dalam dan berkelas */
+  --primary: 79, 70, 229;     /* Deep Cosmic Violet */
+  --secondary: 139, 92, 246;   /* Nebula Purple */
+  --accent: 249, 115, 22;     /* Accretion Disk Fiery Orange */
+  --accent-2: 245, 158, 11;   /* Photon Sphere Gold */
 }
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
+
+/* 🚀 Ultra-Smooth Native Scrolling */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
 body {
-  @apply bg-[#0D0B12];
+  @apply bg-[#030014] text-[#F3F4F6];
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 80px 140px, #ffffff 40%, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 150px 70px, rgba(245,158,11,0.8), rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 240px 220px, #ffffff 60%, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 320px 160px, rgba(139,92,246,0.8), rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 450px 280px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 580px 110px, rgba(6,182,212,0.9), rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 650px 650px;
 }
+
 * {
-  font-family: "Lato", sans-serif;
+  font-family:
+    'Plus Jakarta Sans',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
 }
-/* Blurry Shape Atas */
+
+code,
+pre,
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Cosmic Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #030014;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.35);
+  border-radius: 9999px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(249, 115, 22, 0.6);
+}
+
+/* 🌌 Black Hole & Gravitational Lensing (Accretion Disk) */
 body::before {
-  content: "";
+  content: '';
   position: fixed;
-  top: -10%;
-  left: 30%;
-  width: 20rem;
-  height: 20rem;
-  background-color: rgba(var(--accent-2), 0.3);
-  filter: blur(120px);
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 55rem;
+  height: 40rem;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(3, 0, 20, 0.98) 0%, rgba(12, 5, 31, 0.95) 25%, transparent 26%),
+    radial-gradient(ellipse at 50% 50%, rgba(249, 115, 22, 0.35) 0%, rgba(245, 158, 11, 0.25) 30%, rgba(139, 92, 246, 0.2) 55%, transparent 75%);
+  filter: blur(55px);
   border-radius: 50%;
   z-index: -1;
+  pointer-events: none;
+  animation: accretionSpin 30s linear infinite;
 }
 
-/* Blurry Shape Bawah */
+/* Deep Space Nebula Glow */
 body::after {
-  content: "";
+  content: '';
   position: fixed;
-  bottom: -5%;
-  right: 20%;
-  width: 24rem;
-  height: 24rem;
-  background-color: rgba(var(--primary), 0.3);
+  bottom: -15%;
+  right: 5%;
+  width: 42rem;
+  height: 42rem;
+  background: radial-gradient(
+    circle,
+    rgba(79, 70, 229, 0.22) 0%,
+    rgba(6, 182, 212, 0.15) 45%,
+    transparent 70%
+  );
   filter: blur(120px);
   border-radius: 50%;
   z-index: -1;
+  pointer-events: none;
+  animation: nebulaPulse 18s ease-in-out infinite alternate;
 }
 
-/* Blurry Shape Tambahan di Bawah Kiri */
-body > div.blurry-bottom {
+@keyframes accretionSpin {
+  0% {
+    transform: translateX(-50%) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) rotate(180deg) scale(1.04);
+  }
+  100% {
+    transform: translateX(-50%) rotate(360deg) scale(1);
+  }
+}
+
+@keyframes nebulaPulse {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-40px, -20px) scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes liquidSheen {
+  0% {
+    transform: translateX(-150%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(150%) rotate(45deg);
+  }
+}
+
+.animate-liquid-sheen {
+  animation: liquidSheen 3s infinite ease-in-out;
+}
+
+@keyframes waterGlint {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(200%);
+    opacity: 0;
+  }
+}
+
+.animate-water-glint {
+  animation: waterGlint 1.2s ease-in-out infinite;
+}
+
+/* 💫 Cosmic Floating and Shooting Star Animations */
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: floatGentle 5s ease-in-out infinite;
+}
+
+@keyframes shootingStar {
+  0% {
+    transform: translateX(0) translateY(0) rotate(-45deg) scaleX(0);
+    opacity: 0;
+  }
+  15% {
+    transform: translateX(-50px) translateY(50px) rotate(-45deg) scaleX(1);
+    opacity: 1;
+  }
+  40% {
+    transform: translateX(-350px) translateY(350px) rotate(-45deg) scaleX(1.8);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.shooting-star-1 {
   position: fixed;
-  bottom: 5%;
-  left: 10%;
-  width: 20rem;
-  height: 20rem;
-  background-color: rgba(var(--accent-2), 0.4);
-  filter: blur(100px);
-  border-radius: 50%;
-  z-index: -1;
+  top: 15%;
+  right: 10%;
+  width: 140px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(245,158,11,0.8), transparent);
+  border-radius: 9999px;
+  animation: shootingStar 9s ease-out infinite;
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* Blurry Shape Sisi Kiri */
-body > div.blurry-left {
+.shooting-star-2 {
   position: fixed;
-  top: 20%;
-  left: -15%; /* Perbaikan agar lebih terlihat */
-  width: 25rem; /* Ukuran diperbesar */
-  height: 25rem;
-  background-color: rgba(var(--secondary), 0.4);
-  filter: blur(120px);
-  border-radius: 50%;
-  z-index: -1;
+  top: 35%;
+  right: 35%;
+  width: 110px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(139,92,246,0.8), transparent);
+  border-radius: 9999px;
+  animation: shootingStar 13s 4s ease-out infinite;
+  pointer-events: none;
+  z-index: 0;
 }
 
-body > div.blurry-left::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 18rem; /* Diperbesar */
-  height: 18rem;
-  background-color: rgba(var(--accent-2), 0.4);
-  filter: blur(100px);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  z-index: -1;
+/* Glassmorphism Space Panels */
+.glass-panel {
+  background: rgba(12, 8, 28, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* Blurry Shape Sisi Kanan */
-body > div.blurry-right {
-  position: fixed;
-  top: 20%;
-  right: -15%; /* Perbaikan agar lebih terlihat */
-  width: 25rem; /* Ukuran diperbesar */
-  height: 25rem;
-  background-color: rgba(var(--secondary), 0.4);
-  filter: blur(120px);
-  border-radius: 50%;
-  z-index: -1;
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-body > div.blurry-right::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 18rem; /* Diperbesar */
-  height: 18rem;
-  background-color: rgba(var(--accent-2), 0.4);
-  filter: blur(100px);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  z-index: -1;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 1024px) {
-  body::before {
-    width: 16rem;
-    height: 16rem;
-    top: -5%;
-    left: 25%;
-  }
-
-  body::after {
-    width: 18rem;
-    height: 18rem;
-    bottom: 5%;
-    right: 15%;
-  }
-
-  body > div.blurry-bottom {
-    width: 15rem;
-    height: 15rem;
-    bottom: 10%;
-    left: 15%;
-  }
-
-  body > div.blurry-left,
-  body > div.blurry-right {
-    width: 18rem; /* Perbaikan ukuran */
-    height: 18rem;
-    left: -10%;
-    right: -10%;
-  }
-
-  body > div.blurry-left::after,
-  body > div.blurry-right::after {
-    width: 15rem;
-    height: 15rem;
-  }
-}
-
-@media (max-width: 768px) {
-  body::before {
-    width: 12rem;
-    height: 12rem;
-    top: 0;
-    left: 20%;
-  }
-
-  body::after {
-    width: 14rem;
-    height: 14rem;
-    bottom: 10%;
-    right: 10%;
-  }
-
-  body > div.blurry-bottom {
-    width: 12rem;
-    height: 12rem;
-    bottom: 15%;
-    left: 10%;
-  }
-
-  body > div.blurry-left,
-  body > div.blurry-right {
-    width: 15rem;
-    height: 15rem;
-  }
-
-  body > div.blurry-left::after,
-  body > div.blurry-right::after {
-    width: 12rem;
-    height: 12rem;
-  }
-}
-
-@media (max-width: 480px) {
-  body::before {
-    width: 10rem;
-    height: 10rem;
-    top: 5%;
-    left: 15%;
-  }
-
-  body::after {
-    width: 12rem;
-    height: 12rem;
-    bottom: 15%;
-    right: 5%;
-  }
-
-  body > div.blurry-bottom {
-    width: 10rem;
-    height: 10rem;
-    bottom: 20%;
-    left: 5%;
-  }
-
-  body > div.blurry-left,
-  body > div.blurry-right {
-    width: 12rem;
-    height: 12rem;
-    left: -5%;
-    right: -5%;
-  }
-
-  body > div.blurry-left::after,
-  body > div.blurry-right::after {
-    width: 10rem;
-    height: 10rem;
-  }
+.glass-panel-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow:
+    0 25px 50px -12px rgba(249, 115, 22, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }

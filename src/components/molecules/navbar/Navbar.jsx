@@ -1,85 +1,111 @@
-import React, { useState, useEffect } from "react";
-import { FaProjectDiagram, FaEnvelope, FaCampground } from "react-icons/fa";
-import { useLocation, Link } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { FaCampground, FaEnvelope, FaProjectDiagram } from 'react-icons/fa';
+import { Link, useLocation } from 'react-router-dom';
 
 const navItems = [
   {
-    path: "/",
-    name: "Home",
-    icon: <FaCampground className="sm:rotate-0 -rotate-90" />,
+    path: '/',
+    name: 'Home',
+    icon: <FaCampground size={16} />,
   },
   {
-    path: "/showcase",
-    name: "Showcase",
-    icon: <FaProjectDiagram className="sm:rotate-0 -rotate-90" />,
+    path: '/showcase',
+    name: 'Showcase',
+    icon: <FaProjectDiagram size={16} />,
   },
   {
-    path: "/contact",
-    name: "Contact",
-    icon: <FaEnvelope className="sm:rotate-0 -rotate-90" />,
+    path: '/contact',
+    name: 'Contact',
+    icon: <FaEnvelope size={16} />,
   },
 ];
 
 export default function Navbar() {
   const location = useLocation();
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [animState, setAnimState] = useState('idle');
 
   useEffect(() => {
-    setLoading(true);
-    setProgress(0);
+    setAnimState('idle');
 
-    const interval = setInterval(() => {
-      setProgress((oldProgress) => {
-        if (oldProgress >= 95) return 100;
-        return oldProgress + 5;
-      });
-    }, 100);
+    const raf = requestAnimationFrame(() => {
+      setAnimState('running');
+    });
 
-    const timeout = setTimeout(() => {
-      setProgress(100);
-      setTimeout(() => {
-        setLoading(false);
-        setProgress(0);
-      }, 500);
-    }, 1200);
+    const finishTimeout = setTimeout(() => {
+      setAnimState('finishing');
+    }, 750);
+
+    const idleTimeout = setTimeout(() => {
+      setAnimState('idle');
+    }, 1150);
 
     return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
+      cancelAnimationFrame(raf);
+      clearTimeout(finishTimeout);
+      clearTimeout(idleTimeout);
     };
   }, [location.pathname]);
 
+  const isVisible = animState === 'running' || animState === 'finishing';
+  const isFilled = animState === 'running' || animState === 'finishing';
+  const isFading = animState === 'finishing';
+
   return (
-    <nav
-      className={`backdrop-blur-none sm:backdrop-blur-xl shadow-md border bg-primary/20 sm:bg-primary/10 shadow-primary/40 border-primary hover:border-accent/50 hover:shadow-accent/20 p-2 sticky z-50 mx-auto w-fit rounded-full top-8 flex justify-center items-center overflow-hidden transition-all duration-500 ease-in-out transform translate-y-0`}
-    >
-      {loading && (
+    <nav className="relative overflow-hidden flex items-center justify-between sm:justify-start gap-1 p-1.5 sm:p-2 rounded-full backdrop-blur-2xl bg-[#090518]/90 border border-white/[0.12] shadow-2xl shadow-black/80 transition-all duration-300 hover:border-accent/40 max-w-full">
+      {/* 💧 Pure Liquid Water Chamber */}
+      <div
+        className={`absolute inset-0 pointer-events-none rounded-full overflow-hidden transition-opacity duration-400 ease-out ${
+          isVisible && !isFading ? 'opacity-100' : isFading ? 'opacity-0' : 'opacity-0'
+        }`}
+      >
         <div
-          className="absolute inset-0  bg-secondary/10 border border-secondary/40  rounded-full transition-all duration-200 ease-in-out "
-          style={{ width: `${progress}%` }}
-        />
-      )}
-      <div className="bg-white border border-secondary/30 transition-all  shadow-md hover:shadow-lg rounded-full p-1 sm:block hidden mr-4">
-        <img src="/Troll-Face.svg" className="w-6 h-6 " alt="logo" />
+          className="relative w-full h-full origin-left will-change-transform"
+          style={{
+            transform: isFilled ? 'scaleX(1)' : 'scaleX(0)',
+            transition: isFilled ? 'transform 750ms cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
+          }}
+        >
+          {/* Water Refraction */}
+          <div className="absolute inset-0 bg-white/[0.14] backdrop-blur-md" />
+          <div className="absolute inset-x-0 top-0 h-[1.5px] bg-white/45" />
+          <div className="absolute inset-x-0 bottom-0 h-[1px] bg-white/15" />
+          <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/30 rounded-r-full blur-[1px] border-r border-white/60 shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
+          <div className="absolute inset-y-0 -left-12 w-28 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-water-glint pointer-events-none" />
+        </div>
       </div>
-      <ul className="flex gap-6 items-center justify-center">
-        {navItems.map((item, index) => (
-          <li key={index} className="uppercase flex items-center">
-            <Link
-              to={item.path}
-              className={`flex items-center gap-2 sm:py-2 sm:px-4 py-3 px-3  rounded-full transition-all duration-300 ease-in-out transform 
-                ${
-                  location.pathname === item.path
-                    ? "bg-accent/10 text-accent-2 shadow-md border border-accent/30 scale-105"
-                    : "text-text/80 hover:bg-text/10 border border-transparent hover:border-text/30 hover:scale-105"
+
+      {/* Brand Monogram */}
+      {/* <Link
+        to="/"
+        className="relative z-10 flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/[0.06] hover:bg-accent/20 border border-white/20 hover:border-accent/40 text-white font-mono font-bold text-xs shadow-inner hover:scale-105 transition-all mr-0.5 sm:mr-2 flex-shrink-0"
+        title="Ananta Noviandanu"
+      >
+        <span>&lt;AN/&gt;</span>
+      </Link> */}
+
+      {/* Nav items list */}
+      <ul className="relative z-10 flex items-center gap-1 sm:gap-2">
+        {navItems.map(item => {
+          const isActive = location.pathname === item.path;
+          return (
+            <li key={item.path}>
+              <Link
+                to={item.path}
+                className={`relative flex items-center justify-center gap-1.5 sm:gap-2 py-2 px-3 sm:py-2 sm:px-4 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 ${
+                  isActive
+                    ? 'text-white bg-white/[0.18] border border-white/25 shadow-inner backdrop-blur-md'
+                    : 'text-text/75 hover:text-white hover:bg-white/[0.06]'
                 } active:scale-95`}
-            >
-              {item.icon}
-              <span className="hidden sm:inline">{item.name}</span>
-            </Link>
-          </li>
-        ))}
+              >
+                {/* Active indicator dot */}
+                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />}
+                {item.icon}
+                {/* Label: Always visible, properly sized on mobile & desktop */}
+                <span className="text-xs sm:text-sm tracking-tight">{item.name}</span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

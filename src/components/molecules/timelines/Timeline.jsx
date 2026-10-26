@@ -1,51 +1,70 @@
-import { Chip } from "@material-tailwind/react";
 import React from "react";
+import { FiCalendar, FiMapPin, FiExternalLink } from "react-icons/fi";
 
 const Timeline = ({ events }) => {
   return (
-    <div className="space-y-6">
+    <div className="relative border-l-2 border-white/[0.08] ml-3 sm:ml-4 pl-6 sm:pl-8 space-y-10">
       {events.map((event, index) => (
-        <div key={index} className="relative pl-6 border-l border-gray-300">
-          <div className="absolute left-0 w-3 h-3 bg-accent rounded-full -ml-1.5 top-1.5"></div>
-          <div className="flex justify-between items-center flex-wrap sm:flex-nowrap">
+        <div key={index} className="relative group">
+          {/* Glowing timeline node dot */}
+          <div className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-4 h-4 rounded-full bg-[#0c0915] border-2 border-accent-2 group-hover:scale-125 group-hover:border-white transition-all shadow-[0_0_12px_rgba(244,114,182,0.6)]" />
+
+          {/* Card Header & Role */}
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-1">
             <div>
-              <h2 className="text-lg font-medium text-text hover:underline hover:text-accent-2">
+              <h3 className="text-lg font-bold text-white group-hover:text-accent-2 transition-colors flex items-center gap-2">
                 <a
                   href={event.homepage}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="hover:underline flex items-center gap-1.5"
                 >
                   {event.name}
+                  <FiExternalLink size={13} className="opacity-60" />
                 </a>
-              </h2>
-              <p className="text-sm text-text-2">
-                {event.role} {event.type}
+              </h3>
+              <p className="text-sm font-medium text-secondary">
+                {event.role} {event.type && <span className="text-text/40">• {event.type}</span>}
               </p>
             </div>
-            <div className="flex flex-col sm:items-end items-start sm:gap-1 gap-0">
-              <p className="text-sm text-text-2">{event.duration}</p>
-              <p className="text-sm text-text-2">{event.location}</p>
+
+            <div className="flex flex-wrap items-center gap-3 text-xs text-text/60 font-mono mt-1 sm:mt-0">
+              <span className="flex items-center gap-1">
+                <FiCalendar size={12} />
+                {event.duration}
+              </span>
+              <span className="flex items-center gap-1">
+                <FiMapPin size={12} />
+                {event.location}
+              </span>
             </div>
           </div>
+
+          {/* Bullet points */}
           {event.descriptions && (
-            <ul className="mt-2 text-sm text-gray-400 list-disc list-inside ">
+            <ul className="mt-3 space-y-1.5 text-xs sm:text-sm text-text/75 leading-relaxed">
               {event.descriptions.map((desc, i) => (
-                <li className="py-1" key={i}>
-                  {desc}
+                <li key={i} className="flex items-start gap-2">
+                  <span className="text-secondary font-mono mt-0.5">▸</span>
+                  <span>{desc}</span>
                 </li>
               ))}
             </ul>
           )}
-          <div className="pt-4 flex flex-wrap gap-2">
-            {event.skills.map((skill, i) => (
-              <Chip
-                key={i}
-                value={skill}
-                size="sm"
-                className="bg-accent-2/15 border border-accent-2/20 text-xs font-normal rounded-full"
-              />
-            ))}
-          </div>
+
+          {/* Skill Pills */}
+          {event.skills && event.skills.length > 0 && (
+            <div className="mt-3 pt-2 flex flex-wrap gap-1.5">
+              {event.skills.map((skill, i) => (
+                <span
+                  key={i}
+                  className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white/[0.04] text-text/80 border border-white/[0.08]"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>

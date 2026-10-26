@@ -1,147 +1,75 @@
-import React, { useEffect, useState } from "react";
-import Cta from "../components/molecules/cta/Cta";
-import About from "../components/molecules/container/About";
-import Skill from "../components/molecules/container/Skill";
-import Education from "../components/molecules/container/Education";
-import Highlight from "../components/molecules/container/Highlight";
-import Experience from "../components/molecules/container/Experience";
-import ButtonIcons from "../components/atoms/Button/ButtonIcons";
-import { FaPerson } from "react-icons/fa6";
-import { BiLogoVisualStudio } from "react-icons/bi";
-import { MdWorkHistory } from "react-icons/md";
-import { IoMdSchool } from "react-icons/io";
+import { FaArrowDown } from 'react-icons/fa';
+import IphoneLiquidGlass from '../components/atoms/Iphone/IphoneLiquidGlass';
+import About from '../components/molecules/container/About';
+import Education from '../components/molecules/container/Education';
+import Experience from '../components/molecules/container/Experience';
+import Highlight from '../components/molecules/container/Highlight';
+import Skill from '../components/molecules/container/Skill';
+import Cta from '../components/molecules/cta/Cta';
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isAbout, setIsAbout] = useState(true);
-  const [isSkill, setIsSkill] = useState(false);
-  const [isExp, setIsExp] = useState(true);
-  const [isEdu, setIsEdu] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      setIsVisible(true);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const handleSmoothScroll = (event) => {
-      event.preventDefault();
-      const targetId = event.currentTarget.getAttribute("href").slice(1);
-      const targetElement = document.getElementById(targetId);
-      if (targetElement) {
-        window.scrollTo({
-          top: targetElement.offsetTop,
-          behavior: "smooth",
-        });
-      }
-    };
-
-    const links = document.querySelectorAll('a[href^="#"]');
-    links.forEach((link) => {
-      link.addEventListener("click", handleSmoothScroll);
-    });
-
-    return () => {
-      links.forEach((link) => {
-        link.removeEventListener("click", handleSmoothScroll);
-      });
-    };
-  }, []);
-
-  if (isLoading) {
-    return <div className="min-h-svh"></div>;
-  }
-
   return (
-    <main
-      className={`py-4 flex flex-col gap-6 transition-opacity duration-1000 min-h-screen ${
-        isVisible ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      <section>
-        <div className="flex flex-row flex-wrap gap-6 lg:flex-nowrap">
-          <div className="w-full lg:w-1/2">
+    <main className="py-2 flex flex-col gap-10">
+      {/* Hero Showcase with Liquid Glass iPhone & Introduction */}
+      <section className="relative pt-2 pb-6">
+        {/* Glow backdrop behind hero */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[350px] bg-gradient-to-tr from-accent/15 via-secondary/15 to-tenary/15 blur-[120px] pointer-events-none rounded-full" />
+
+        <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Left Column: CTA & High-impact introduction (7 cols) */}
+          <div className="lg:col-span-7 flex flex-col gap-6">
             <Cta />
-          </div>
-          <div className="w-full lg:w-1/2">
             <Highlight />
           </div>
+
+          {/* Right Column: Liquid Glass iPhone Interactive Device with Gentle Float (5 cols) */}
+          <div className="lg:col-span-5 flex flex-col items-center justify-center w-full overflow-visible">
+            <div className="text-center mb-2">
+              <span className="text-[11px] font-mono tracking-widest uppercase text-accent-2/90 flex items-center justify-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />
+                Cosmic OS • Event Horizon
+              </span>
+            </div>
+
+            <div className="animate-float flex justify-center w-full">
+              <IphoneLiquidGlass />
+            </div>
+
+            <p className="text-[11px] font-mono text-text/40 text-center mt-3">
+              Tap bottom dock icons to interact • Live widgets
+            </p>
+          </div>
+        </div>
+
+        {/* Subtle scroll cue */}
+        <div className="mt-8 flex justify-center">
+          <a
+            href="#about"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.08] hover:border-accent/30 text-xs font-mono text-text/60 hover:text-white transition-all duration-300"
+          >
+            <span>Descend into Orbit</span>
+            <FaArrowDown size={10} className="animate-bounce text-accent" />
+          </a>
         </div>
       </section>
 
-      <section className={isAbout ? "" : "hidden"} id="about">
-        <About
-          title={"about"}
-          isClose={isAbout}
-          onClose={() => setIsAbout(false)}
-        />
+      {/* About Section */}
+      <section id="about">
+        <About title="about" />
       </section>
-      <section className={isSkill ? "" : "hidden"} id="skill">
-        <Skill
-          title={"skills"}
-          isClose={isSkill}
-          onClose={() => setIsSkill(false)}
-        />
+
+      {/* Experience Section */}
+      <section id="experience">
+        <Experience />
       </section>
-      <section className={isExp ? "" : "hidden"} id="exp">
-        <Experience
-          title={"experiences"}
-          isClose={isExp}
-          onClose={() => setIsExp(false)}
-        />
+
+      {/* Education Section */}
+      <section id="education">
+        <Education />
       </section>
-      <section className={isEdu ? "" : "hidden"} id="edu">
-        <Education
-          title={"educations"}
-          isClose={isEdu}
-          onClose={() => setIsEdu(false)}
-        />
-      </section>
-      <section>
-        <div
-          className={`fixed right-4 top-[45%] transform -translate-y-1/2 bg-primary/10 border border-primary/20 rounded-full sm:px-2 px-3 py-2 ${
-            isAbout && isSkill && isExp && isEdu ? "hidden" : ""
-          }`}
-        >
-          <div className="flex flex-col gap-2 items-center">
-            <div className={isAbout ? "hidden" : ""}>
-              <a href="#about">
-                <ButtonIcons
-                  onClick={() => setIsAbout(true)}
-                  icon={<FaPerson size={20} />}
-                />
-              </a>
-            </div>
-            <div className={isSkill ? "hidden" : ""}>
-              <a href="#skill">
-                <ButtonIcons
-                  onClick={() => setIsSkill(true)}
-                  icon={<BiLogoVisualStudio size={20} />}
-                />
-              </a>
-            </div>
-            <div className={isExp ? "hidden" : ""}>
-              <a href="#exp">
-                <ButtonIcons
-                  onClick={() => setIsExp(true)}
-                  icon={<MdWorkHistory size={20} />}
-                />
-              </a>
-            </div>
-            <div className={isEdu ? "hidden" : ""}>
-              <a href="#edu">
-                <ButtonIcons
-                  onClick={() => setIsEdu(true)}
-                  icon={<IoMdSchool size={20} />}
-                />
-              </a>
-            </div>
-          </div>
-        </div>
+      {/* Skills Section */}
+      <section id="skills">
+        <Skill />
       </section>
     </main>
   );

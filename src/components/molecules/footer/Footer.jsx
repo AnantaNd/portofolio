@@ -6,31 +6,33 @@ import { FaMedium } from "react-icons/fa6";
 import { PiGithubLogoFill } from "react-icons/pi";
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <div className=" text-text p-4">
-      <div className="container mx-auto text-center">
-        <p className="text-sm">
-          © 2025{" "}
-          <span className="underline font-semibold text-accent-2">
-            Ananta Noviandanu.
-          </span>{" "}
-          All rights reserved.
+    <footer className="text-text/70 px-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm">
+        <p className="text-center sm:text-left">
+          © {currentYear}{" "}
+          <span className="font-semibold text-white">Ananta Noviandanu</span>.
+          Crafted with React, Tailwind &amp; modern aesthetics.
         </p>
-        <div className="flex flex-row items-center gap-4 justify-center pt-4 ">
+
+        <div className="flex items-center gap-3">
           <Link
             to="https://www.linkedin.com/in/anantanoviandanu/"
             target="_blank"
+            rel="noreferrer"
           >
-            <ButtonIcons icon={<FaLinkedinIn size={20} />} />
+            <ButtonIcons icon={<FaLinkedinIn size={16} />} title="LinkedIn" className="!w-9 !h-9" />
           </Link>
-          <Link to="https://github.com/AnantaNd" target="_blank">
-            <ButtonIcons icon={<PiGithubLogoFill size={20} />} />
+          <Link to="https://github.com/AnantaNd" target="_blank" rel="noreferrer">
+            <ButtonIcons icon={<PiGithubLogoFill size={16} />} title="GitHub" className="!w-9 !h-9" />
           </Link>
-          <Link to="https://medium.com/@nantd" target="_blank">
-            <ButtonIcons icon={<FaMedium size={20} />} />
+          <Link to="https://medium.com/@nantd" target="_blank" rel="noreferrer">
+            <ButtonIcons icon={<FaMedium size={16} />} title="Medium" className="!w-9 !h-9" />
           </Link>
         </div>
       </div>
-    </div>
+    </footer>
   );
 }
