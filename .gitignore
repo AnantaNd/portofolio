@@ -1,8 +1,12 @@
 # Node modules
 node_modules/
 
-# Build output
+# Build output (CRA legacy)
 build/
+
+# Vite build output
+dist/
+dist-ssr/
 
 # Logs
 logs/
