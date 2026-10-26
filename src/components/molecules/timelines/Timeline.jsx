@@ -7,7 +7,7 @@ const Timeline = ({ events }) => {
       {events.map((event, index) => (
         <div key={index} className="relative group">
           {/* Glowing timeline node dot */}
-          <div className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-4 h-4 rounded-full bg-[#0c0915] border-2 border-accent-2 group-hover:scale-125 group-hover:border-white transition-all shadow-[0_0_12px_rgba(244,114,182,0.6)]" />
+          <div className="absolute -left-[31px] sm:-left-[39px] top-1.5 w-4 h-4 rounded-full bg-[#0c0915] timeline-dot-bg border-2 border-accent-2 group-hover:scale-125 group-hover:border-white transition-all shadow-[0_0_12px_rgba(244,114,182,0.6)]" />
 
           {/* Card Header & Role */}
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-1">

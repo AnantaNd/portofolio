@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { FaCampground, FaEnvelope, FaProjectDiagram } from 'react-icons/fa';
+import { HiSun, HiMoon } from 'react-icons/hi';
 import { Link, useLocation } from 'react-router-dom';
+import { useTheme } from '../../../context/ThemeContext';
 
 const navItems = [
   {
@@ -23,6 +25,7 @@ const navItems = [
 export default function Navbar() {
   const location = useLocation();
   const [animState, setAnimState] = useState('idle');
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     setAnimState('idle');
@@ -107,6 +110,25 @@ export default function Navbar() {
           );
         })}
       </ul>
+
+      {/* Theme Toggle Button */}
+      <button
+        type="button"
+        onClick={toggleTheme}
+        aria-label={theme === 'dark' ? 'Switch to Starlight mode' : 'Switch to Ultra-Dark mode'}
+        className={`relative z-10 ml-1 sm:ml-2 flex items-center justify-center w-8 h-8 rounded-full border hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer flex-shrink-0 ${
+          theme === 'dark'
+            ? 'bg-white/[0.04] border-white/15 hover:bg-amber-400/20 hover:border-amber-400/40'
+            : 'bg-indigo-950/60 border-purple-400/40 hover:bg-purple-900/40 hover:border-accent-2/60 shadow-inner'
+        }`}
+        title={theme === 'dark' ? 'Switch to Starlight Mode' : 'Switch to Ultra-Dark Mode'}
+      >
+        {theme === 'dark' ? (
+          <HiSun size={15} className="text-amber-300" />
+        ) : (
+          <HiMoon size={15} className="text-secondary" />
+        )}
+      </button>
     </nav>
   );
 }
