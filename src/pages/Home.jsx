@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { BsBroadcast } from 'react-icons/bs';
-import { FaArrowDown, FaGamepad, FaGithub, FaLinkedinIn, FaNodeJs, FaReact, FaVuejs } from 'react-icons/fa';
+import {
+  FaArrowDown,
+  FaGamepad,
+  FaGithub,
+  FaLinkedinIn,
+  FaNodeJs,
+  FaReact,
+  FaVuejs,
+} from 'react-icons/fa';
 import { FaMedium } from 'react-icons/fa6';
 import { FiCheck, FiCopy } from 'react-icons/fi';
 import { IoRocketOutline } from 'react-icons/io5';
@@ -118,14 +126,6 @@ export default function Home() {
                     <span>{email}</span>
                   </>
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setGameOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-accent/25 via-purple-900/40 to-secondary/25 hover:from-accent/40 hover:to-secondary/40 border border-accent/40 text-accent-2 hover:text-white text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow-[0_0_15px_rgba(249,115,22,0.25)] hover:scale-105 active:scale-95 group/btn"
-              >
-                <IoRocketOutline size={14} className="rotate-45 text-accent group-hover/btn:animate-bounce" />
-                <span>Play Meteor Strike</span>
               </button>
             </div>
           </BentoCard>
@@ -304,7 +304,8 @@ export default function Home() {
                     Orbital Station Meteor Defense
                   </h3>
                   <p className="text-xs text-text/70 mt-1 max-w-xl leading-relaxed">
-                    Pilot your starfighter through asteroid storms, blast incoming meteors with neon lasers, collect energy shields &amp; 3X blaster upgrades!
+                    Pilot your starfighter through asteroid storms, blast incoming meteors with neon
+                    lasers, collect energy shields &amp; 3X blaster upgrades!
                   </p>
                 </div>
               </div>
