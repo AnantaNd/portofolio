@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { BsBroadcast } from 'react-icons/bs';
-import { FaArrowDown, FaGithub, FaLinkedinIn, FaNodeJs, FaReact, FaVuejs } from 'react-icons/fa';
+import { FaArrowDown, FaGamepad, FaGithub, FaLinkedinIn, FaNodeJs, FaReact, FaVuejs } from 'react-icons/fa';
 import { FaMedium } from 'react-icons/fa6';
 import { FiCheck, FiCopy } from 'react-icons/fi';
+import { IoRocketOutline } from 'react-icons/io5';
 import { MdSchool } from 'react-icons/md';
 import { PiGithubLogoFill } from 'react-icons/pi';
 import { SiRedux, SiTailwindcss, SiZigbee2Mqtt } from 'react-icons/si';
@@ -12,6 +13,7 @@ import About from '../components/molecules/container/About';
 import Education from '../components/molecules/container/Education';
 import Experience from '../components/molecules/container/Experience';
 import Skill from '../components/molecules/container/Skill';
+import MeteorShooterModal from '../components/molecules/game/MeteorShooterModal';
 
 const techStack = [
   { icon: <TbBrandTypescript size={20} className="text-blue-400" />, name: 'TypeScript' },
@@ -39,6 +41,7 @@ function BentoCard({ children, className = '' }) {
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
   const email = 'ananta.nov2@gmail.com';
 
   const handleCopy = () => {
@@ -115,6 +118,14 @@ export default function Home() {
                     <span>{email}</span>
                   </>
                 )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setGameOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-accent/25 via-purple-900/40 to-secondary/25 hover:from-accent/40 hover:to-secondary/40 border border-accent/40 text-accent-2 hover:text-white text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow-[0_0_15px_rgba(249,115,22,0.25)] hover:scale-105 active:scale-95 group/btn"
+              >
+                <IoRocketOutline size={14} className="rotate-45 text-accent group-hover/btn:animate-bounce" />
+                <span>Play Meteor Strike</span>
               </button>
             </div>
           </BentoCard>
@@ -270,6 +281,43 @@ export default function Home() {
               ))}
             </div>
           </BentoCard>
+
+          {/* ── CELL 9: Meteor Strike Interactive Game Easter Egg ── */}
+          <BentoCard className="col-span-2 lg:col-span-4 p-5 sm:p-6 bg-gradient-to-r from-accent/10 via-purple-950/20 to-secondary/10 border-accent/25 hover:border-accent/50 transition-all">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-accent to-secondary p-0.5 shadow-lg shadow-accent/25 flex-shrink-0">
+                  <div className="w-full h-full bg-[#050212] rounded-[14px] flex items-center justify-center">
+                    <IoRocketOutline size={22} className="text-accent-2 rotate-45 animate-bounce" />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-accent-2 font-bold">
+                      Interactive Easter Egg
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[9px] font-mono border border-accent/30 font-bold">
+                      MINI GAME
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-white mt-0.5">
+                    Orbital Station Meteor Defense
+                  </h3>
+                  <p className="text-xs text-text/70 mt-1 max-w-xl leading-relaxed">
+                    Pilot your starfighter through asteroid storms, blast incoming meteors with neon lasers, collect energy shields &amp; 3X blaster upgrades!
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setGameOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-accent to-secondary hover:from-accent/90 hover:to-secondary/90 text-white font-bold text-xs tracking-wider shadow-lg shadow-accent/25 hover:scale-105 active:scale-95 transition-all cursor-pointer flex-shrink-0"
+              >
+                <FaGamepad size={14} /> PLAY GAME
+              </button>
+            </div>
+          </BentoCard>
         </div>
 
         {/* Scroll Cue */}
@@ -303,6 +351,9 @@ export default function Home() {
       <section id="skills">
         <Skill />
       </section>
+
+      {/* Meteor Defense Mini Game Modal */}
+      <MeteorShooterModal isOpen={gameOpen} onClose={() => setGameOpen(false)} />
     </main>
   );
 }

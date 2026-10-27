@@ -31,7 +31,7 @@ export default function Layouts() {
   const isLight = theme === "light";
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-between selection:bg-accent/30 selection:text-white">
+    <div className="relative min-h-screen flex flex-col justify-between selection:bg-accent/30 selection:text-white overflow-x-hidden">
       {/* 🌠 Cosmic Shooting Stars Effect */}
       <div className="shooting-star-1" />
       <div className="shooting-star-2" />
