@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { FaBolt, FaPlay, FaRedo, FaTrophy, FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { IoClose, IoRocketOutline } from 'react-icons/io5';
 
@@ -199,6 +199,125 @@ const BOSS_THEMES = [
   { primary: '#D97706', secondary: '#FBBF24', core: '#FEF08A' },
 ];
 
+const BOSS_SKILLS = [
+  {
+    id: 'aimed',
+    name: 'Hunter Shot',
+    description: 'Fires a bullet aimed at the player position',
+    color: '#FB7185',
+  },
+  {
+    id: 'fan',
+    name: 'Nova Fan',
+    description: 'Fires bullets in a wide fan spread',
+    color: '#FBBF24',
+  },
+  {
+    id: 'radial',
+    name: 'Starburst',
+    description: 'Releases bullets in a full circle',
+    color: '#C084FC',
+  },
+  {
+    id: 'burst',
+    name: 'Triple Hunt',
+    description: 'Fires a burst of aimed bullets in succession',
+    color: '#22D3EE',
+  },
+  {
+    id: 'cross',
+    name: 'Crossfire',
+    description: 'Fires crossing bullets from each side of the boss',
+    color: '#4ADE80',
+  },
+  {
+    id: 'rain',
+    name: 'Meteor Rain',
+    description: 'Bullet rain with a wide spread pattern',
+    color: '#60A5FA',
+  },
+  {
+    id: 'spiral',
+    name: 'Void Spiral',
+    description: 'Fires bullets in a rotating spiral',
+    color: '#E879F9',
+  },
+];
+
+const pickBossSkills = (wave, previousIds = []) => {
+  const shuffled = [...BOSS_SKILLS].sort(() => Math.random() - 0.5);
+  const count = Math.min(wave >= 5 ? 4 : wave >= 3 ? 3 : 2, BOSS_SKILLS.length);
+  let picked = shuffled.slice(0, count);
+  // Avoid repeating the exact same skill set on consecutive waves.
+  if (
+    picked
+      .map(skill => skill.id)
+      .sort()
+      .join('|') === [...previousIds].sort().join('|')
+  ) {
+    picked = shuffled.slice(count, count * 2);
+  }
+  return picked.length ? picked : shuffled.slice(0, count);
+};
+
+// Boss elemental fusions are independent from the boss's random attack skills.
+const BOSS_ELEMENT_COMBOS = [
+  {
+    id: 'froststorm',
+    name: 'Froststorm',
+    icon: '❄️⚡',
+    elements: ['ice', 'lightning'],
+    color: '#67E8F9',
+    description: 'fast electric shots that slow movement',
+  },
+  {
+    id: 'plasma',
+    name: 'Plasma Overlord',
+    icon: '🔥⚡',
+    elements: ['fire', 'lightning'],
+    color: '#FB7185',
+    description: 'fast, larger plasma shots',
+  },
+  {
+    id: 'absolute-zero',
+    name: 'Absolute Zero',
+    icon: '❄️🌪️',
+    elements: ['ice', 'wind'],
+    color: '#38BDF8',
+    description: 'quick shots that briefly slow movement',
+  },
+  {
+    id: 'toxic-blaze',
+    name: 'Toxic Devourer',
+    icon: '☠️🔥',
+    elements: ['poison', 'fire'],
+    color: '#A3E635',
+    description: 'slow toxic fireballs with a larger hit radius',
+  },
+  {
+    id: 'eclipse',
+    name: 'Eclipse Tyrant',
+    icon: '🌑☀️',
+    elements: ['shadow', 'light'],
+    color: '#C084FC',
+    description: 'small, fast piercing-feeling void rays',
+  },
+  {
+    id: 'storm-seeker',
+    name: 'Storm Hunter',
+    icon: '🚀⚡',
+    elements: ['rocket', 'lightning'],
+    color: '#FBBF24',
+    description: 'homing electric missiles',
+  },
+];
+
+const pickBossElementCombo = previousId => {
+  const choices = BOSS_ELEMENT_COMBOS.filter(combo => combo.id !== previousId);
+  const pool = choices.length ? choices : BOSS_ELEMENT_COMBOS;
+  return pool[Math.floor(Math.random() * pool.length)];
+};
+
 const WEAPONS = {
   default: {
     id: 'default',
@@ -295,7 +414,7 @@ const WEAPONS = {
     icon: '🌩️',
     color: '#67E8F9',
     badge: 'ICE + VOLT',
-    desc: 'Freezing lightning chains',
+    desc: 'Freezing lightning chains; lower damage and limited chain range',
     elements: ['ice', 'lightning'],
   },
   fire_lightning: {
@@ -304,7 +423,7 @@ const WEAPONS = {
     icon: '⚡🔥',
     color: '#FB7185',
     badge: 'PLASMA AoE',
-    desc: 'Explosive plasma that chains to nearby targets',
+    desc: 'High burst damage and burn; slow shots and long cooldown',
     elements: ['fire', 'lightning'],
   },
   ice_wind: {
@@ -313,7 +432,7 @@ const WEAPONS = {
     icon: '❄️🌪️',
     color: '#A5F3FC',
     badge: 'FROST PIERCER',
-    desc: 'Piercing frost blades that slow targets',
+    desc: 'Piercing frost blades; low damage and slow freeze buildup',
     elements: ['ice', 'wind'],
   },
   poison_fire: {
@@ -322,7 +441,7 @@ const WEAPONS = {
     icon: '☣️🔥',
     color: '#BEF264',
     badge: 'TOXIC AoE',
-    desc: 'Burning poison spreads damage around impact',
+    desc: 'Poison and burn over time; low initial damage',
     elements: ['poison', 'fire'],
   },
   shadow_light: {
@@ -331,7 +450,7 @@ const WEAPONS = {
     icon: '🌘',
     color: '#E9D5FF',
     badge: 'ECLIPSE',
-    desc: 'Light and void energy with bonus damage',
+    desc: 'Piercing beam with bonus damage; straight-line aim and long cooldown',
     elements: ['shadow', 'light'],
   },
   rocket_lightning: {
@@ -340,7 +459,7 @@ const WEAPONS = {
     icon: '🚀⚡',
     color: '#FDE047',
     badge: 'HOMING CHAIN',
-    desc: 'Homing missiles that arc lightning on impact',
+    desc: 'Homing missiles with limited lightning chains and slow firing',
     elements: ['rocket', 'lightning'],
   },
 };
@@ -364,6 +483,26 @@ const ELEMENT_SKILLS = [
   'earth',
   'light',
   'shadow',
+];
+
+// Balance values: damage is relative to the default laser (1 damage).
+// Longer intervals and lower damage keep strong fusion effects from becoming overpowered.
+const WEAPON_BALANCE = {
+  ice_lightning: { interval: 230, damage: 0.75, chainLimit: 2 },
+  fire_lightning: { interval: 270, damage: 1.5, projectileSpeed: 9 },
+  ice_wind: { interval: 240, damage: 0.55, projectileSpeed: 10, pierce: true },
+  poison_fire: { interval: 210, damage: 0.4, poisonDuration: 3, poisonDamage: 0.5 },
+  shadow_light: { interval: 250, damage: 1.2, pierce: true },
+  rocket_lightning: { interval: 290, damage: 1, chainLimit: 2, projectileSpeed: 10 },
+};
+
+const CHEAT_COMBOS = [
+  { keys: ['KeyT', 'KeyF'], weapon: 'poison_fire', label: 'T + F', name: 'Toxic Blaze' },
+  { keys: ['KeyI', 'KeyL'], weapon: 'ice_lightning', label: 'I + L', name: 'Permafrost Storm' },
+  { keys: ['KeyF', 'KeyL'], weapon: 'fire_lightning', label: 'F + L', name: 'Plasma Inferno' },
+  { keys: ['KeyI', 'KeyW'], weapon: 'ice_wind', label: 'I + W', name: 'Absolute Zero' },
+  { keys: ['KeyH', 'KeyL'], weapon: 'shadow_light', label: 'H + L', name: 'Eclipse Beam' },
+  { keys: ['KeyR', 'KeyL'], weapon: 'rocket_lightning', label: 'R + L', name: 'Storm Seeker' },
 ];
 
 const getWeaponElements = weaponId => WEAPONS[weaponId]?.elements || [];
@@ -420,6 +559,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     powerups: [],
     waveKills: 0,
     boss: null,
+    lastBossSkillIds: [],
+    lastBossElementComboId: null,
     bossProjectiles: [],
     bossWarning: null,
     bossVictory: null,
@@ -520,6 +661,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     g.waveKills = 0;
     g.boss = null;
     g.bossProjectiles = [];
+    g.lastBossElementComboId = null;
+    g.lastBossSkillIds = [];
     g.bossWarning = null;
     g.bossVictory = null;
     g.spawnInterval = 1200;
@@ -530,10 +673,13 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     g.player.x = g.width / 2;
     g.player.y = g.height - 80;
     g.player.shield = false;
+    g.player.bossSlowTimer = 0;
     g.player.tripleShotTime = 0;
     g.player.lastShotTime = 0;
     g.player.weapon = 'default';
     g.keys.shoot = false;
+    g.cheatKeys = {};
+    g.lastCheatTime = 0;
 
     setScore(0);
     setLives(3);
@@ -548,6 +694,22 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     if (!isOpen) return;
 
     const handleKeyDown = e => {
+      const g = gameRef.current;
+      g.cheatKeys = g.cheatKeys || {};
+      g.cheatKeys[e.code] = true;
+
+      // Cheat combos: hold two keys simultaneously to instantly activate a fusion weapon.
+      if (gameState === 'playing' && !e.repeat && Date.now() - (g.lastCheatTime || 0) > 350) {
+        const cheat = CHEAT_COMBOS.find(combo => combo.keys.every(key => g.cheatKeys[key]));
+        if (cheat) {
+          g.player.weapon = cheat.weapon;
+          // Reset cooldown so the fusion weapon can fire immediately.
+          g.player.lastShotTime = 0;
+          g.lastCheatTime = Date.now();
+          setWeapon(cheat.weapon);
+        }
+      }
+
       if (['ArrowLeft', 'KeyA'].includes(e.code)) {
         gameRef.current.keys.left = true;
       }
@@ -570,6 +732,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     };
 
     const handleKeyUp = e => {
+      if (gameRef.current.cheatKeys) delete gameRef.current.cheatKeys[e.code];
       if (['ArrowLeft', 'KeyA'].includes(e.code)) {
         gameRef.current.keys.left = false;
       }
@@ -609,7 +772,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     const relativeX = clientX - rect.left;
     const relativeY = clientY - rect.top;
 
-    // Offset roket ke atas ~55px agar roket terlihat jelas di atas ujung jari dan tidak tertutup saat dimainkan di HP
+    // Offset rocket upward ~55px so it's visible above the finger tip and not covered when playing on mobile
     const touchYOffset = isTouch ? 55 : 0;
     const targetY = relativeY - touchYOffset;
 
@@ -679,11 +842,15 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
 
       // 2. PLAYING UPDATES
       if (gameState === 'playing') {
+        // Boss elemental effects can temporarily slow player movement.
+        if (p.bossSlowTimer > 0) p.bossSlowTimer = Math.max(0, p.bossSlowTimer - delta);
+        const playerMoveSpeed = p.speed * (p.bossSlowTimer > 0 ? 0.62 : 1);
+
         // Player keyboard motion
-        if (g.keys.left) p.x -= p.speed;
-        if (g.keys.right) p.x += p.speed;
-        if (g.keys.up) p.y -= p.speed;
-        if (g.keys.down) p.y += p.speed;
+        if (g.keys.left) p.x -= playerMoveSpeed;
+        if (g.keys.right) p.x += playerMoveSpeed;
+        if (g.keys.up) p.y -= playerMoveSpeed;
+        if (g.keys.down) p.y += playerMoveSpeed;
 
         // Boundaries
         p.x = Math.max(18, Math.min(width - 18, p.x));
@@ -702,8 +869,10 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         // Automatic / Pressed Shooting with Permanent Elemental Weapon
         const currentWep = p.weapon || 'default';
         const wepInfo = WEAPONS[currentWep] || WEAPONS.default;
+        const weaponBalance = WEAPON_BALANCE[currentWep] || {};
         const shootInterval =
-          currentWep === 'rocket' ? 280 : currentWep === 'lightning' ? 150 : 180;
+          weaponBalance.interval ??
+          (currentWep === 'rocket' ? 280 : currentWep === 'lightning' ? 150 : 180);
 
         if (g.keys.shoot && currentTime - p.lastShotTime > shootInterval) {
           p.lastShotTime = currentTime;
@@ -713,12 +882,20 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             x,
             y,
             vx,
-            vy,
+            vy: weaponBalance.projectileSpeed ? -weaponBalance.projectileSpeed : vy,
             type: currentWep,
             elements: getWeaponElements(currentWep),
             color: wepInfo.color,
-            radius: currentWep === 'rocket' ? 5.5 : currentWep === 'fire' ? 4.5 : 3.5,
-            damage: currentWep === 'rocket' ? 2 : 1,
+            radius:
+              currentWep === 'rocket' || currentWep === 'rocket_lightning'
+                ? 5.5
+                : currentWep === 'fire'
+                  ? 4.5
+                  : 3.5,
+            damage: (currentWep === 'rocket' ? 2 : 1) * (weaponBalance.damage ?? 1),
+            pierce: Boolean(weaponBalance.pierce),
+            hitTargets: [],
+            hitBoss: false,
             life: 0,
           });
 
@@ -736,13 +913,13 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         }
 
         // Wave Boss Trigger Check: When wave kill quota is met, summon the Wave Boss!
-        const targetKillsForBoss = 8 + g.wave * 3; // e.g. Wave 1: 8 meteors, Wave 2: 10 meteors
+        const targetKillsForBoss = Math.max(5, 5 + g.wave * 2); // Wave 1: 7 kills, Wave 2: 9 kills
         if (!g.boss && !g.bossWarning && g.waveKills >= targetKillsForBoss) {
           const themeIndex = (g.wave - 1) % BOSS_THEMES.length;
           const theme = BOSS_THEMES[themeIndex];
           const bossName = BOSS_NAMES[Math.min(g.wave - 1, BOSS_NAMES.length - 1)];
           const bossRadius = Math.min(36 + g.wave * 3, 54);
-          const bossHp = 16 + (g.wave - 1) * 12;
+          const bossHp = 65 + (g.wave - 1) * 35; // More durable bosses with stronger scaling each wave
 
           const numVerts = 10 + Math.floor(Math.random() * 4);
           const vertices = [];
@@ -752,8 +929,17 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             vertices.push({ x: Math.cos(angle) * r, y: Math.sin(angle) * r });
           }
 
+          const bossSkills = pickBossSkills(g.wave, g.lastBossSkillIds);
+          g.lastBossSkillIds = bossSkills.map(skill => skill.id);
+          const bossElementCombo = pickBossElementCombo(g.lastBossElementComboId);
+          g.lastBossElementComboId = bossElementCombo.id;
+
           g.boss = {
             name: bossName,
+            skills: bossSkills,
+            elementCombo: bossElementCombo,
+            elements: bossElementCombo.elements,
+            spiralAngle: Math.random() * Math.PI * 2,
             x: width / 2,
             y: -bossRadius - 25,
             targetY: 85,
@@ -765,14 +951,14 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             rotation: 0,
             rotSpeed: 0.012,
             lastAttackTime: currentTime + 1000,
-            attackInterval: Math.max(1500, 2400 - g.wave * 100),
+            attackInterval: Math.max(1050, 1900 - g.wave * 90),
             vertices,
             flashTimer: 0,
           };
 
           sfx.bossAlert();
           g.bossWarning = {
-            text: `⚠️ TITAN DETECTED: ${bossName} ⚠️`,
+            text: `⚠️ ${bossElementCombo.icon} ${bossElementCombo.name.toUpperCase()} — ${bossName} ⚠️`,
             timer: 2.5,
           };
         }
@@ -849,7 +1035,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         const l = g.lasers[i];
 
         // Homing behavior for Micro Missiles
-        if (l.type === 'rocket') {
+        if (l.type === 'rocket' || (l.elements || []).includes('rocket')) {
           let target = null;
           if (g.boss && g.boss.y > -20) {
             target = g.boss;
@@ -891,7 +1077,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
 
         // Custom visuals for each elemental weapon
         ctx.save();
-        if (l.type === 'rocket') {
+        if (l.type === 'rocket' || (l.elements || []).includes('rocket')) {
           ctx.translate(l.x, l.y);
           ctx.rotate(Math.atan2(l.vy, l.vx) + Math.PI / 2);
           ctx.fillStyle = '#F59E0B';
@@ -1017,7 +1203,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           m.poisonTimer -= delta;
           m.poisonTick = (m.poisonTick || 0) + delta;
           if (m.poisonTick >= 0.5) {
-            m.hp -= 1;
+            m.hp -= m.poisonDamage ?? 1;
             m.poisonTick = 0;
           }
         }
@@ -1066,19 +1252,25 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           const l = g.lasers[j];
           const dist = Math.hypot(m.x - l.x, m.y - l.y);
           if (dist < m.radius + 6) {
+            if (l.pierce && l.hitTargets?.includes(m)) continue;
             // Hit!
             const elements = l.elements || getWeaponElements(l.type);
             const dmg =
               (l.damage || 1) + (elements.includes('earth') || elements.includes('shadow') ? 1 : 0);
             m.hp -= dmg;
             if (elements.includes('poison')) {
-              m.poisonTimer = 2.5;
-              m.poisonDamage = 0.5;
+              const balance = WEAPON_BALANCE[l.type] || {};
+              m.poisonTimer = balance.poisonDuration ?? 2.5;
+              m.poisonDamage = balance.poisonDamage ?? 0.5;
             }
             const hitType = l.type;
             const hitX = l.x;
             const hitY = l.y;
-            g.lasers.splice(j, 1);
+            if (l.pierce) {
+              l.hitTargets = [...(l.hitTargets || []), m];
+            } else {
+              g.lasers.splice(j, 1);
+            }
 
             // Special Elemental On-Hit Effects:
             if ((l.elements || getWeaponElements(hitType)).includes('fire')) {
@@ -1106,7 +1298,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   life: 0.4,
                 });
               }
-            } else if ((l.elements || getWeaponElements(hitType)).includes('ice')) {
+            }
+            if ((l.elements || getWeaponElements(hitType)).includes('ice')) {
               // Ice Freeze & Slow
               m.slowTimer = 3.5;
               m.speed = Math.max(0.6, m.speed * 0.45);
@@ -1122,11 +1315,13 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   life: 0.4,
                 });
               }
-            } else if ((l.elements || getWeaponElements(hitType)).includes('lightning')) {
+            }
+            if ((l.elements || getWeaponElements(hitType)).includes('lightning')) {
               // Lightning Chain Arc to nearby meteors
               let chained = 0;
+              const chainLimit = (WEAPON_BALANCE[hitType] || {}).chainLimit ?? 2;
               for (const otherM of g.meteors) {
-                if (otherM !== m && chained < 2) {
+                if (otherM !== m && chained < chainLimit) {
                   const d = Math.hypot(otherM.x - hitX, otherM.y - hitY);
                   if (d < 130) {
                     otherM.hp -= 1;
@@ -1146,7 +1341,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   }
                 }
               }
-            } else if ((l.elements || getWeaponElements(hitType)).includes('rocket')) {
+            }
+            if ((l.elements || getWeaponElements(hitType)).includes('rocket')) {
               // Rocket heavy blast particles
               for (let k = 0; k < 12; k++) {
                 const angle = Math.random() * Math.PI * 2;
@@ -1161,6 +1357,22 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   alpha: 1,
                   life: 0.45,
                 });
+              }
+            }
+
+            // Absolute Zero pulls nearby meteors inward, but deals reduced direct damage.
+            if (
+              (l.elements || getWeaponElements(hitType)).includes('ice') &&
+              (l.elements || getWeaponElements(hitType)).includes('wind')
+            ) {
+              for (const otherM of g.meteors) {
+                if (otherM !== m) {
+                  const pullDistance = Math.hypot(otherM.x - hitX, otherM.y - hitY);
+                  if (pullDistance < 80 && pullDistance > 0) {
+                    otherM.x += ((hitX - otherM.x) / pullDistance) * 4;
+                    otherM.y += ((hitY - otherM.y) / pullDistance) * 4;
+                  }
+                }
               }
             }
 
@@ -1290,71 +1502,83 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           }
         }
 
-        // Boss Plasma Weapon Attack
+        // Random skill attacks: each boss receives a different skill combination per wave.
         if (currentTime - b.lastAttackTime > b.attackInterval && b.y >= b.targetY - 15) {
           b.lastAttackTime = currentTime;
           sfx.bossShot();
-          if (g.wave === 1) {
-            // Wave 1: Single focused plasma ball
+          const skill = b.skills[Math.floor(Math.random() * b.skills.length)] || BOSS_SKILLS[0];
+          const originY = b.y + b.radius * 0.7;
+          const elementCombo = b.elementCombo || BOSS_ELEMENT_COMBOS[0];
+          const bossElements = b.elements || elementCombo.elements || [];
+          const baseColor = elementCombo.color || skill.color || b.theme.secondary;
+          const makeBossShot = (angle, speed = 3.5, radius = 6.5, x = b.x, y = originY) => {
+            const isHoming = bossElements.includes('rocket');
+            const adjustedSpeed = speed * (bossElements.includes('lightning') ? 1.12 : 1);
+            const adjustedRadius =
+              radius *
+              (bossElements.includes('fire') || bossElements.includes('poison') ? 1.16 : 1);
             g.bossProjectiles.push({
-              x: b.x,
-              y: b.y + b.radius * 0.7,
-              vx: 0,
-              vy: 3.5,
-              radius: 6.5,
-              color: b.theme.secondary,
+              x,
+              y,
+              vx: Math.cos(angle) * adjustedSpeed,
+              vy: Math.sin(angle) * adjustedSpeed,
+              radius: adjustedRadius,
+              color: baseColor,
+              elements: bossElements,
+              homing: isHoming,
+              fusionId: elementCombo.id,
             });
-          } else if (g.wave === 2) {
-            // Wave 2: Dual plasma stream
-            g.bossProjectiles.push(
-              {
-                x: b.x - 14,
-                y: b.y + b.radius * 0.7,
-                vx: -1.3,
-                vy: 3.6,
-                radius: 6.5,
-                color: b.theme.secondary,
-              },
-              {
-                x: b.x + 14,
-                y: b.y + b.radius * 0.7,
-                vx: 1.3,
-                vy: 3.6,
-                radius: 6.5,
-                color: b.theme.secondary,
+          };
+          const aimAngle = Math.atan2(p.y - originY, p.x - b.x);
+
+          switch (skill.id) {
+            case 'aimed':
+              makeBossShot(aimAngle, 4.1, 7);
+              break;
+            case 'fan':
+              for (let n = -2; n <= 2; n++) makeBossShot(Math.PI / 2 + n * 0.22, 3.5, 6.5);
+              break;
+            case 'radial':
+              for (let n = 0; n < 10; n++)
+                makeBossShot((Math.PI * 2 * n) / 10 + b.rotation, 3.0, 6);
+              break;
+            case 'burst':
+              for (let n = -1; n <= 1; n++) makeBossShot(aimAngle + n * 0.18, 4.0, 6.5);
+              break;
+            case 'cross':
+              for (let n = -1; n <= 1; n++) {
+                makeBossShot(Math.PI / 2 + n * 0.38, 3.6, 6, b.x - b.radius * 0.55, originY);
+                makeBossShot(Math.PI / 2 + n * 0.38, 3.6, 6, b.x + b.radius * 0.55, originY);
               }
-            );
-          } else {
-            // Wave 3+: Triple plasma spread
-            g.bossProjectiles.push(
-              {
-                x: b.x,
-                y: b.y + b.radius * 0.7,
-                vx: 0,
-                vy: 3.8,
-                radius: 7,
-                color: b.theme.secondary,
-              },
-              {
-                x: b.x - 16,
-                y: b.y + b.radius * 0.7,
-                vx: -2.0,
-                vy: 3.5,
-                radius: 7,
-                color: b.theme.secondary,
-              },
-              {
-                x: b.x + 16,
-                y: b.y + b.radius * 0.7,
-                vx: 2.0,
-                vy: 3.5,
-                radius: 7,
-                color: b.theme.secondary,
+              break;
+            case 'rain':
+              for (let n = 0; n < 7; n++) {
+                const spreadX = b.x + (Math.random() - 0.5) * Math.min(width * 0.8, 260);
+                g.bossProjectiles.push({
+                  x: Math.max(12, Math.min(width - 12, spreadX)),
+                  y: originY,
+                  vx: (p.x - spreadX) * 0.006,
+                  vy: (3.2 + Math.random() * 0.8) * (bossElements.includes('lightning') ? 1.12 : 1),
+                  radius:
+                    5.5 *
+                    (bossElements.includes('fire') || bossElements.includes('poison') ? 1.16 : 1),
+                  color: baseColor,
+                  elements: bossElements,
+                  homing: bossElements.includes('rocket'),
+                  fusionId: elementCombo.id,
+                });
               }
-            );
+              break;
+            case 'spiral':
+              b.spiralAngle = (b.spiralAngle || 0) + 0.45;
+              for (let n = 0; n < 4; n++) {
+                makeBossShot(b.spiralAngle + (Math.PI * 2 * n) / 4, 3.2, 6);
+              }
+              break;
+            default:
+              makeBossShot(aimAngle, 3.7, 6.5);
           }
         }
-
         // Render Boss Rock & Energy Shield
         ctx.save();
         ctx.translate(b.x, b.y);
@@ -1418,25 +1642,39 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.font = 'bold 9.5px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        ctx.fillText(`⚡ BOSS: ${b.name} (${b.hp}/${b.maxHp} HP)`, width / 2, barY - 2);
+        ctx.fillText(`⚡ BOSS: ${b.name} (${Math.ceil(b.hp)}/${b.maxHp} HP)`, width / 2, barY - 2);
+        ctx.font = '8px monospace';
+        ctx.fillStyle = b.skills?.[0]?.color || b.theme.secondary;
+        const skillLabel = (b.skills || []).map(skill => skill.name).join(' • ');
+        ctx.fillText(
+          `${b.elementCombo?.icon || '⚡'} ${b.elementCombo?.name || 'Elemental Boss'} | SKILLS: ${skillLabel}`,
+          width / 2,
+          barY + barH + 11
+        );
 
         // Player Laser Collision with Boss
         for (let j = g.lasers.length - 1; j >= 0; j--) {
           const l = g.lasers[j];
           const dist = Math.hypot(b.x - l.x, b.y - l.y);
           if (dist < b.radius + 8) {
+            if (l.pierce && l.hitBoss) continue;
             const dmg = l.damage || 1;
             b.hp -= dmg;
             b.flashTimer = 0.08;
             const hitType = l.type;
             const hitX = l.x;
             const hitY = l.y;
-            g.lasers.splice(j, 1);
+            if (l.pierce) {
+              l.hitBoss = true;
+            } else {
+              g.lasers.splice(j, 1);
+            }
 
             // Special on-hit visual feedback for boss
-            if (hitType === 'ice') {
-              b.slowTimer = 2.5;
-            } else if ((l.elements || getWeaponElements(hitType)).includes('fire')) {
+            if ((l.elements || getWeaponElements(hitType)).includes('ice')) {
+              b.slowTimer = Math.max(b.slowTimer || 0, 1.25);
+            }
+            if ((l.elements || getWeaponElements(hitType)).includes('fire')) {
               for (let k = 0; k < 6; k++) {
                 g.particles.push({
                   x: hitX,
@@ -1549,6 +1787,18 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       // 4.6. UPDATE & DRAW BOSS PROJECTILES
       for (let i = g.bossProjectiles.length - 1; i >= 0; i--) {
         const bp = g.bossProjectiles[i];
+        if (bp.homing) {
+          const targetAngle = Math.atan2(p.y - bp.y, p.x - bp.x);
+          const currentAngle = Math.atan2(bp.vy, bp.vx);
+          const angleDiff = Math.atan2(
+            Math.sin(targetAngle - currentAngle),
+            Math.cos(targetAngle - currentAngle)
+          );
+          const nextAngle = currentAngle + Math.max(-0.045, Math.min(0.045, angleDiff));
+          const speed = Math.hypot(bp.vx, bp.vy);
+          bp.vx = Math.cos(nextAngle) * speed;
+          bp.vy = Math.sin(nextAngle) * speed;
+        }
         bp.x += bp.vx;
         bp.y += bp.vy;
 
@@ -1572,6 +1822,23 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           g.bossProjectiles.splice(i, 1);
           sfx.explosion(false);
 
+          const projectileElements = bp.elements || [];
+          if (projectileElements.includes('ice')) {
+            p.bossSlowTimer = Math.max(p.bossSlowTimer || 0, 1.6);
+          }
+          for (let particle = 0; particle < 7; particle++) {
+            g.particles.push({
+              x: p.x,
+              y: p.y,
+              vx: (Math.random() - 0.5) * 4,
+              vy: (Math.random() - 0.5) * 4,
+              size: 2 + Math.random() * 2,
+              color: bp.color || '#F59E0B',
+              alpha: 1,
+              life: 0.35,
+            });
+          }
+
           if (p.shield) {
             p.shield = false;
           } else {
@@ -1589,28 +1856,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           continue;
         }
 
-        // Player laser intercepts boss projectile
-        for (let j = g.lasers.length - 1; j >= 0; j--) {
-          const l = g.lasers[j];
-          const lDist = Math.hypot(bp.x - l.x, bp.y - l.y);
-          if (lDist < bp.radius + 6) {
-            g.bossProjectiles.splice(i, 1);
-            g.lasers.splice(j, 1);
-            for (let k = 0; k < 5; k++) {
-              g.particles.push({
-                x: bp.x,
-                y: bp.y,
-                vx: (Math.random() - 0.5) * 4,
-                vy: (Math.random() - 0.5) * 4,
-                size: Math.random() * 2 + 1,
-                color: '#F59E0B',
-                alpha: 1,
-                life: 0.3,
-              });
-            }
-            break;
-          }
-        }
+        // Boss projectiles are immune to player lasers and cannot be destroyed by shooting.
 
         if (bp.y > height + 20 || bp.x < -20 || bp.x > width + 20) {
           g.bossProjectiles.splice(i, 1);
@@ -1683,7 +1929,12 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
               text: comboSucceeded
                 ? `⚡ COMBO FORGED: ${wName.toUpperCase()}!`
                 : combinedWeapon === 'default'
-                  ? '💥 ELEMENTS CLASHED! WEAPON RESET TO DEFAULT!'
+                  ? (getWeaponElements(previousWeapon).includes('ice') &&
+                      getWeaponElements(pu.weaponType).includes('fire')) ||
+                    (getWeaponElements(previousWeapon).includes('fire') &&
+                      getWeaponElements(pu.weaponType).includes('ice'))
+                    ? '💥 ICE + FIRE FUSION FAILED! DUAL PLASMA RESTORED!'
+                    : '💥 ELEMENTS CLASHED! WEAPON RESET TO DEFAULT!'
                   : `✨ WEAPON: ${wName.toUpperCase()} EQUIPPED!`,
               timer: 3.5,
             };
@@ -1853,7 +2104,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn touch-none select-none overflow-hidden"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/95 animate-fadeIn touch-none select-none overflow-hidden"
       onClick={e => {
         // Prevent background clicks from doing anything, only close if backdrop clicked when not playing
         if (e.target === e.currentTarget && gameState !== 'playing') {
@@ -1971,6 +2222,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           {/* Start Screen Overlay */}
           {gameState === 'start' && (
             <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-start overflow-y-auto p-4 sm:p-6 text-center z-20 animate-fadeIn">
+              {/* Start Button — pinned at top */}
+
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-accent to-secondary p-0.5 shadow-xl shadow-accent/30 mb-4 animate-bounce">
                 <div className="w-full h-full bg-[#050212] rounded-[14px] flex items-center justify-center">
                   <IoRocketOutline size={28} className="text-accent-2 rotate-45" />
@@ -1982,7 +2235,13 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                 Anomalous asteroid cluster detected near the event horizon. Defend the orbital
                 station!
               </p>
-
+              <button
+                type="button"
+                onClick={startGame}
+                className="mb-2 mt-4 px-6 py-2.5 rounded-full bg-gradient-to-r from-accent to-secondary hover:from-accent/90 hover:to-secondary/90 text-white font-bold text-sm tracking-wide shadow-lg shadow-accent/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer shrink-0"
+              >
+                <FaPlay size={12} /> LAUNCH DEFENSE
+              </button>
               {/* Controls Guidance */}
               <div className="mt-4 p-3 rounded-2xl bg-white/[0.04] border border-white/10 text-[11px] font-mono text-left w-full max-w-[280px] space-y-1.5 text-text/80">
                 <div className="flex items-center justify-between">
@@ -1993,6 +2252,24 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   <span className="text-secondary">Mobile:</span>
                   <span>Touch &amp; Drag ship to fire</span>
                 </div>
+              </div>
+
+              {/* Keyboard Fusion Cheats */}
+              <div className="mt-3 p-3 rounded-2xl bg-fuchsia-500/[0.08] border border-fuchsia-400/25 text-left w-full max-w-[280px]">
+                <h3 className="text-xs font-black tracking-wider text-fuchsia-200 mb-2">
+                  KEYBOARD FUSION CHEATS
+                </h3>
+                <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[10px] sm:text-[11px] font-mono">
+                  {CHEAT_COMBOS.map(combo => (
+                    <Fragment key={combo.weapon}>
+                      <span className="text-fuchsia-200 font-bold">{combo.label}</span>
+                      <span className="text-white/75">{combo.name}</span>
+                    </Fragment>
+                  ))}
+                </div>
+                <p className="text-[9px] text-white/50 mt-2">
+                  Hold both keys simultaneously while the game is running.
+                </p>
               </div>
 
               {/* Element Fusion Guide */}
@@ -2017,19 +2294,43 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   <span className="text-white/75">🚀 Rocket + ⚡ Lightning</span>
                   <span className="text-yellow-200 text-right">Storm Seeker</span>
                 </div>
+                <div className="mt-3 pt-2 border-t border-white/10">
+                  <div className="text-[9px] font-black tracking-wider text-amber-200 mb-1.5">
+                    FUSION TRADE-OFFS
+                  </div>
+                  <div className="space-y-1.5 text-[10px] leading-relaxed text-white/60">
+                    <p>
+                      🌩️ <span className="text-cyan-100">Permafrost Storm:</span> lower damage;
+                      limited chain range, less effective when enemies are spread apart.
+                    </p>
+                    <p>
+                      ⚡🔥 <span className="text-rose-100">Plasma Inferno:</span> high burst damage,
+                      but slow shots and long cooldown.
+                    </p>
+                    <p>
+                      ❄️🌪️ <span className="text-sky-100">Absolute Zero:</span> low direct damage;
+                      fast enemies can escape the vortex.
+                    </p>
+                    <p>
+                      ☣️🔥 <span className="text-lime-100">Toxic Blaze:</span> low initial damage;
+                      requires time for poison and burn to stack.
+                    </p>
+                    <p>
+                      🌘 <span className="text-violet-100">Eclipse Beam:</span> must aim in a
+                      straight line and has a longer cooldown.
+                    </p>
+                    <p>
+                      🚀⚡ <span className="text-yellow-100">Storm Seeker:</span> rockets home in on
+                      targets, but low firing rate and limited chains.
+                    </p>
+                  </div>
+                </div>
                 <div className="mt-2 pt-2 border-t border-white/10 text-[10px] leading-relaxed text-white/55">
-                  ❄️ Ice + 🔥 Fire tidak cocok: fusion gagal dan senjata kembali ke{' '}
+                  ❄️ Ice + 🔥 Fire are incompatible: fusion fails, elemental bonuses are lost, and
+                  weapon reverts to{' '}
                   <span className="font-bold text-orange-300">🔫 Dual Plasma</span>.
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={startGame}
-                className="mt-4 mb-1 px-6 py-2.5 rounded-full bg-gradient-to-r from-accent to-secondary hover:from-accent/90 hover:to-secondary/90 text-white font-bold text-sm tracking-wide shadow-lg shadow-accent/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer shrink-0"
-              >
-                <FaPlay size={12} /> LAUNCH DEFENSE
-              </button>
             </div>
           )}
 
