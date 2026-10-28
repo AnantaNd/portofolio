@@ -1637,7 +1637,9 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
   const updateCanvasDimensions = useCallback(() => {
     if (!containerRef.current || !canvasRef.current) return;
     const contWidth = containerRef.current.clientWidth || 360;
-    const contHeight = containerRef.current.clientHeight || (typeof window !== 'undefined' ? window.innerHeight : 600);
+    const contHeight =
+      containerRef.current.clientHeight ||
+      (typeof window !== 'undefined' ? window.innerHeight : 600);
 
     // Keep responsive ratio on mobile, cap max width to 420px
     const targetW = Math.max(300, Math.min(contWidth, 420));
@@ -2172,11 +2174,22 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         if (m.type === 'fast' || m.type === 'huge') {
           const trailLen = m.type === 'huge' ? m.radius * 1.8 : m.radius * 1.4;
           const trailGrad = ctx.createLinearGradient(0, -m.radius, 0, -m.radius - trailLen);
-          trailGrad.addColorStop(0, m.type === 'fast' ? 'rgba(239,68,68,0.7)' : 'rgba(168,85,247,0.6)');
+          trailGrad.addColorStop(
+            0,
+            m.type === 'fast' ? 'rgba(239,68,68,0.7)' : 'rgba(168,85,247,0.6)'
+          );
           trailGrad.addColorStop(1, 'rgba(0,0,0,0)');
           ctx.fillStyle = trailGrad;
           ctx.beginPath();
-          ctx.ellipse(0, -m.radius - trailLen / 2, m.radius * 0.45, trailLen / 2, 0, 0, Math.PI * 2);
+          ctx.ellipse(
+            0,
+            -m.radius - trailLen / 2,
+            m.radius * 0.45,
+            trailLen / 2,
+            0,
+            0,
+            Math.PI * 2
+          );
           ctx.fill();
         } else {
           const trailGrad = ctx.createLinearGradient(0, -m.radius, 0, -m.radius - m.radius * 1.2);
@@ -2184,7 +2197,15 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           trailGrad.addColorStop(1, 'rgba(0,0,0,0)');
           ctx.fillStyle = trailGrad;
           ctx.beginPath();
-          ctx.ellipse(0, -m.radius - m.radius * 0.6, m.radius * 0.3, m.radius * 0.6, 0, 0, Math.PI * 2);
+          ctx.ellipse(
+            0,
+            -m.radius - m.radius * 0.6,
+            m.radius * 0.3,
+            m.radius * 0.6,
+            0,
+            0,
+            Math.PI * 2
+          );
           ctx.fill();
         }
 
@@ -2195,7 +2216,14 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.shadowBlur = m.type === 'huge' ? 18 : 10;
 
         // Core rock gradient
-        const rockGrad = ctx.createRadialGradient(-m.radius * 0.25, -m.radius * 0.25, 1, 0, 0, m.radius);
+        const rockGrad = ctx.createRadialGradient(
+          -m.radius * 0.25,
+          -m.radius * 0.25,
+          1,
+          0,
+          0,
+          m.radius
+        );
         if (m.type === 'huge') {
           rockGrad.addColorStop(0, '#D8B4FE');
           rockGrad.addColorStop(0.3, '#A855F7');
@@ -2223,7 +2251,12 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.fill();
 
         // Edge highlight stroke
-        ctx.strokeStyle = m.type === 'huge' ? 'rgba(216,180,254,0.45)' : m.type === 'fast' ? 'rgba(252,165,165,0.4)' : 'rgba(253,186,116,0.35)';
+        ctx.strokeStyle =
+          m.type === 'huge'
+            ? 'rgba(216,180,254,0.45)'
+            : m.type === 'fast'
+              ? 'rgba(252,165,165,0.4)'
+              : 'rgba(253,186,116,0.35)';
         ctx.lineWidth = 1.2;
         ctx.stroke();
 
@@ -2618,8 +2651,12 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   x: Math.max(16, Math.min(width - 16, spreadX)),
                   y: originY,
                   vx: (p.x - spreadX) * 0.004,
-                  vy: (2.8 + Math.random() * 0.6 + g.wave * 0.06) * (bossElements.includes('lightning') ? 1.1 : 1),
-                  radius: 5.2 * (bossElements.includes('fire') || bossElements.includes('poison') ? 1.1 : 1),
+                  vy:
+                    (2.8 + Math.random() * 0.6 + g.wave * 0.06) *
+                    (bossElements.includes('lightning') ? 1.1 : 1),
+                  radius:
+                    5.2 *
+                    (bossElements.includes('fire') || bossElements.includes('poison') ? 1.1 : 1),
                   color: baseColor,
                   elements: bossElements,
                   homing: bossElements.includes('rocket'),
@@ -2695,7 +2732,14 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           ctx.shadowColor = '#FFFFFF';
           ctx.shadowBlur = 30;
         } else {
-          const bossGrad = ctx.createRadialGradient(-b.radius * 0.2, -b.radius * 0.2, 3, 0, 0, b.radius);
+          const bossGrad = ctx.createRadialGradient(
+            -b.radius * 0.2,
+            -b.radius * 0.2,
+            3,
+            0,
+            0,
+            b.radius
+          );
           bossGrad.addColorStop(0, b.theme.core);
           bossGrad.addColorStop(0.25, b.theme.secondary);
           bossGrad.addColorStop(0.6, b.theme.primary);
@@ -2792,7 +2836,10 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.lineWidth = 1;
         for (let seg = 1; seg < 4; seg++) {
           const sx = barX + barW * seg * 0.25;
-          ctx.beginPath(); ctx.moveTo(sx, barY); ctx.lineTo(sx, barY + barH); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(sx, barY);
+          ctx.lineTo(sx, barY + barH);
+          ctx.stroke();
         }
 
         // HP text inside bar
@@ -3256,7 +3303,12 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.fillStyle = flameGradL;
         ctx.beginPath();
         ctx.moveTo(-10, 14);
-        ctx.quadraticCurveTo(-7 + Math.sin(shipTime * 22) * 1.5, 14 + flameL * 0.6, -7, 14 + flameL);
+        ctx.quadraticCurveTo(
+          -7 + Math.sin(shipTime * 22) * 1.5,
+          14 + flameL * 0.6,
+          -7,
+          14 + flameL
+        );
         ctx.quadraticCurveTo(-4, 14 + flameL * 0.6, -4, 14);
         ctx.fill();
 
@@ -3269,7 +3321,12 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.fillStyle = flameGradR;
         ctx.beginPath();
         ctx.moveTo(4, 14);
-        ctx.quadraticCurveTo(7 + Math.sin(shipTime * 22 + 0.8) * 1.5, 14 + flameR * 0.6, 7, 14 + flameR);
+        ctx.quadraticCurveTo(
+          7 + Math.sin(shipTime * 22 + 0.8) * 1.5,
+          14 + flameR * 0.6,
+          7,
+          14 + flameR
+        );
         ctx.quadraticCurveTo(10, 14 + flameR * 0.6, 10, 14);
         ctx.fill();
 
@@ -3299,10 +3356,16 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         // Wing accent stripes
         ctx.fillStyle = '#4C1D95';
         ctx.beginPath();
-        ctx.moveTo(-18, 12); ctx.lineTo(-10, 9); ctx.lineTo(-12, 13); ctx.closePath();
+        ctx.moveTo(-18, 12);
+        ctx.lineTo(-10, 9);
+        ctx.lineTo(-12, 13);
+        ctx.closePath();
         ctx.fill();
         ctx.beginPath();
-        ctx.moveTo(18, 12); ctx.lineTo(10, 9); ctx.lineTo(12, 13); ctx.closePath();
+        ctx.moveTo(18, 12);
+        ctx.lineTo(10, 9);
+        ctx.lineTo(12, 13);
+        ctx.closePath();
         ctx.fill();
 
         // Center spine
@@ -3337,15 +3400,23 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.fillStyle = '#1E1E2E';
         ctx.strokeStyle = '#F97316';
         ctx.lineWidth = 1;
-        ctx.fillRect(-15.5, 0, 3, 9); ctx.strokeRect(-15.5, 0, 3, 9);
-        ctx.fillRect(12.5, 0, 3, 9);  ctx.strokeRect(12.5, 0, 3, 9);
+        ctx.fillRect(-15.5, 0, 3, 9);
+        ctx.strokeRect(-15.5, 0, 3, 9);
+        ctx.fillRect(12.5, 0, 3, 9);
+        ctx.strokeRect(12.5, 0, 3, 9);
 
         // Engine pods
         ctx.fillStyle = '#1C1035';
         ctx.strokeStyle = '#6D28D9';
         ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.ellipse(-7, 11, 3.5, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.ellipse(7, 11, 3.5, 4, 0, 0, Math.PI * 2);  ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(-7, 11, 3.5, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(7, 11, 3.5, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
 
         // Energy Shield
         if (p.shield) {
@@ -3355,10 +3426,14 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           ctx.lineWidth = 2.2;
           ctx.shadowColor = '#22D3EE';
           ctx.shadowBlur = 20;
-          ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(0, 0, 28, 0, Math.PI * 2);
+          ctx.stroke();
           ctx.strokeStyle = 'rgba(34,211,238,0.35)';
           ctx.lineWidth = 6;
-          ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(0, 0, 28, 0, Math.PI * 2);
+          ctx.stroke();
           ctx.globalAlpha = 1;
         }
 
@@ -3668,7 +3743,10 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
               </div>
 
               {/* Keyboard Fusion Cheats */}
-              <div className="mt-3 p-3 rounded-2xl bg-fuchsia-500/[0.08] border border-fuchsia-400/25 text-left w-full max-w-[280px]">
+              <div
+                hidden={true}
+                className="mt-3 p-3 rounded-2xl bg-fuchsia-500/[0.08] border border-fuchsia-400/25 text-left w-full max-w-[280px]"
+              >
                 <h3 className="text-xs font-black tracking-wider text-fuchsia-200 mb-2">
                   KEYBOARD FUSION CHEATS
                 </h3>
