@@ -1151,6 +1151,397 @@ const combineWeapons = (currentId, pickedId) => {
   return ELEMENT_COMBOS[key] || pickedId;
 };
 
+// ---------------------------------------------------------------------------
+// Projectile renderers (forward = -Y; canvas is already translated & rotated)
+// ---------------------------------------------------------------------------
+const flameShape = (ctx, w, h, color) => {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  ctx.bezierCurveTo(w * 1.2, h * 0.2, w * 1.1, -h * 0.8, 0, -h * 0.8);
+  ctx.bezierCurveTo(-w * 1.1, -h * 0.8, -w * 1.2, h * 0.2, 0, h);
+  ctx.closePath();
+  ctx.fill();
+};
+
+const EARTH_SHARD = [
+  [0, -10],
+  [4, -5],
+  [6, 1],
+  [3, 7],
+  [-2, 8],
+  [-6, 2],
+  [-4, -5],
+];
+
+const PROJECTILE_DRAWERS = {
+  default(ctx, t, color) {
+    const g = ctx.createLinearGradient(0, -8, 0, 18);
+    g.addColorStop(0, '#FFFFFF');
+    g.addColorStop(0.25, color);
+    g.addColorStop(1, 'rgba(249,115,22,0)');
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(0, -9);
+    ctx.quadraticCurveTo(3.2, -4, 2.4, 18);
+    ctx.lineTo(-2.4, 18);
+    ctx.quadraticCurveTo(-3.2, -4, 0, -9);
+    ctx.fill();
+  },
+
+  fire(ctx, t) {
+    const f = Math.sin(t * 40) * 1.4;
+    ctx.shadowColor = '#F97316';
+    ctx.shadowBlur = 18;
+    const tail = ctx.createLinearGradient(0, 2, 0, 26);
+    tail.addColorStop(0, 'rgba(249,115,22,0.8)');
+    tail.addColorStop(1, 'rgba(239,68,68,0)');
+    ctx.fillStyle = tail;
+    ctx.beginPath();
+    ctx.moveTo(-4, 2);
+    ctx.quadraticCurveTo(-2 + f, 14, f, 26);
+    ctx.quadraticCurveTo(2 - f, 14, 4, 2);
+    ctx.fill();
+    flameShape(ctx, 5.5, 10 + f * 0.3, '#EF4444');
+    flameShape(ctx, 3.8, 7.5, '#F97316');
+    flameShape(ctx, 2, 4.5, '#FDE047');
+  },
+
+  ice(ctx, t) {
+    ctx.shadowColor = '#38BDF8';
+    ctx.shadowBlur = 14;
+    // snowflake trail
+    for (let i = 0; i < 3; i++) {
+      ctx.fillStyle = `rgba(186,230,253,${0.6 - i * 0.18})`;
+      ctx.beginPath();
+      ctx.arc(Math.sin(t * 20 + i * 2) * 2, 14 + i * 6, 1.8 - i * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const g = ctx.createLinearGradient(-5, -11, 5, 10);
+    g.addColorStop(0, '#E0F2FE');
+    g.addColorStop(0.5, '#38BDF8');
+    g.addColorStop(1, '#0369A1');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(0, -12);
+    ctx.lineTo(4.5, -3);
+    ctx.lineTo(3.5, 6);
+    ctx.lineTo(0, 10);
+    ctx.lineTo(-3.5, 6);
+    ctx.lineTo(-4.5, -3);
+    ctx.closePath();
+    ctx.fill();
+    // facet
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(0, -12);
+    ctx.lineTo(4.5, -3);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(0, -12);
+    ctx.lineTo(0, 10);
+    ctx.stroke();
+  },
+
+  lightning(ctx, t) {
+    const n = 6;
+    const pts = [];
+    for (let i = 0; i <= n; i++) {
+      const y = -13 + (i * 28) / n;
+      const x = i === 0 || i === n ? 0 : Math.sin(t * 60 + i * 2.3) * 4.5;
+      pts.push([x, y]);
+    }
+    const path = () => {
+      ctx.beginPath();
+      pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    };
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = '#FACC15';
+    ctx.shadowBlur = 18;
+    ctx.strokeStyle = 'rgba(250,204,21,0.55)';
+    ctx.lineWidth = 5;
+    path();
+    ctx.stroke();
+    ctx.strokeStyle = '#FEF9C3';
+    ctx.lineWidth = 1.8;
+    path();
+    ctx.stroke();
+    // small branch
+    const [bx, by] = pts[3];
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.lineTo(bx + 5, by + 4);
+    ctx.stroke();
+  },
+
+  rocket(ctx, t) {
+    const f = Math.sin(t * 50) * 2;
+    ctx.shadowColor = '#F59E0B';
+    ctx.shadowBlur = 12;
+    // exhaust flame
+    const fl = ctx.createLinearGradient(0, 7, 0, 22 + f);
+    fl.addColorStop(0, '#FDE047');
+    fl.addColorStop(0.5, '#F97316');
+    fl.addColorStop(1, 'rgba(239,68,68,0)');
+    ctx.fillStyle = fl;
+    ctx.beginPath();
+    ctx.moveTo(-2.6, 7);
+    ctx.lineTo(0, 22 + f);
+    ctx.lineTo(2.6, 7);
+    ctx.fill();
+    // fins
+    ctx.fillStyle = '#B91C1C';
+    ctx.beginPath();
+    ctx.moveTo(-2.6, 2);
+    ctx.lineTo(-6, 9);
+    ctx.lineTo(-2.6, 7);
+    ctx.moveTo(2.6, 2);
+    ctx.lineTo(6, 9);
+    ctx.lineTo(2.6, 7);
+    ctx.fill();
+    // body
+    ctx.fillStyle = '#E2E8F0';
+    ctx.fillRect(-2.8, -6, 5.6, 14);
+    ctx.fillStyle = '#94A3B8';
+    ctx.fillRect(0.6, -6, 2.2, 14);
+    // nose cone
+    ctx.fillStyle = '#EF4444';
+    ctx.beginPath();
+    ctx.moveTo(-2.8, -6);
+    ctx.quadraticCurveTo(0, -15, 2.8, -6);
+    ctx.fill();
+    // window
+    ctx.fillStyle = '#38BDF8';
+    ctx.beginPath();
+    ctx.arc(0, -1, 1.4, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  poison(ctx, t) {
+    ctx.shadowColor = '#A3E635';
+    ctx.shadowBlur = 14;
+    // dripping trail
+    for (let i = 0; i < 3; i++) {
+      ctx.fillStyle = `rgba(132,204,22,${0.55 - i * 0.15})`;
+      ctx.beginPath();
+      ctx.arc(Math.sin(t * 12 + i * 2.4) * 2.2, 11 + i * 6, 2.6 - i * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    const g = ctx.createRadialGradient(-1.5, -2, 1, 0, 0, 8);
+    g.addColorStop(0, '#ECFCCB');
+    g.addColorStop(0.5, '#84CC16');
+    g.addColorStop(1, '#3F6212');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(0, 12);
+    ctx.bezierCurveTo(8, 6, 7, -9, 0, -9);
+    ctx.bezierCurveTo(-7, -9, -8, 6, 0, 12);
+    ctx.fill();
+    // bubbles
+    ctx.fillStyle = 'rgba(236,252,203,0.8)';
+    ctx.beginPath();
+    ctx.arc(-2, -2, 1.5, 0, Math.PI * 2);
+    ctx.arc(2, 3, 1, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  wind(ctx, t) {
+    ctx.shadowColor = '#67E8F9';
+    ctx.shadowBlur = 12;
+    // swirl streaks behind the blade
+    ctx.strokeStyle = 'rgba(165,243,252,0.55)';
+    ctx.lineWidth = 1.2;
+    for (let i = -1; i <= 1; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * 4, 4);
+      ctx.quadraticCurveTo(i * 4 + Math.sin(t * 15 + i) * 3, 14, i * 4, 22);
+      ctx.stroke();
+    }
+    // crescent blade
+    const g = ctx.createLinearGradient(0, -12, 0, 4);
+    g.addColorStop(0, '#FFFFFF');
+    g.addColorStop(1, '#22D3EE');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(-8, 4);
+    ctx.quadraticCurveTo(0, -18, 8, 4);
+    ctx.quadraticCurveTo(0, -6, -8, 4);
+    ctx.fill();
+  },
+
+  earth(ctx, t) {
+    ctx.rotate(t * 5);
+    ctx.shadowColor = '#C08457';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#92643A';
+    ctx.beginPath();
+    EARTH_SHARD.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#C08457';
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(4, -5);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(-4, -5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#5B3A1E';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    EARTH_SHARD.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+    ctx.closePath();
+    ctx.stroke();
+  },
+
+  light(ctx, t) {
+    const g = ctx.createLinearGradient(0, -12, 0, 24);
+    g.addColorStop(0, '#FFFFFF');
+    g.addColorStop(0.3, 'rgba(254,240,138,0.9)');
+    g.addColorStop(1, 'rgba(253,224,71,0)');
+    ctx.shadowColor = '#FEF08A';
+    ctx.shadowBlur = 22;
+    ctx.fillStyle = g;
+    ctx.fillRect(-2, -12, 4, 36);
+    // 4-point flare
+    const s = 1 + Math.sin(t * 30) * 0.15;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.moveTo(0, -14 * s);
+    ctx.lineTo(1.6, -7.6);
+    ctx.lineTo(6 * s, -6);
+    ctx.lineTo(1.6, -4.4);
+    ctx.lineTo(0, 2 * s);
+    ctx.lineTo(-1.6, -4.4);
+    ctx.lineTo(-6 * s, -6);
+    ctx.lineTo(-1.6, -7.6);
+    ctx.closePath();
+    ctx.fill();
+  },
+
+  shadow(ctx, t) {
+    ctx.shadowColor = '#A855F7';
+    ctx.shadowBlur = 18;
+    // dark mist tail
+    const tail = ctx.createLinearGradient(0, 0, 0, 22);
+    tail.addColorStop(0, 'rgba(88,28,135,0.7)');
+    tail.addColorStop(1, 'rgba(88,28,135,0)');
+    ctx.fillStyle = tail;
+    ctx.beginPath();
+    ctx.moveTo(-5, 0);
+    ctx.quadraticCurveTo(Math.sin(t * 10) * 3, 12, 0, 22);
+    ctx.quadraticCurveTo(Math.sin(t * 10) * 3, 12, 5, 0);
+    ctx.fill();
+    const g = ctx.createRadialGradient(0, 0, 1, 0, 0, 7);
+    g.addColorStop(0, '#0F0524');
+    g.addColorStop(0.7, '#3B0764');
+    g.addColorStop(1, '#7E22CE');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, 6.5, 0, Math.PI * 2);
+    ctx.fill();
+    // pulsing ring
+    ctx.strokeStyle = `rgba(216,180,254,${0.6 + Math.sin(t * 12) * 0.3})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, 8.5 + Math.sin(t * 12), 0, Math.PI * 2);
+    ctx.stroke();
+  },
+};
+
+// Draw order: "body" elements first, effect elements layered on top.
+const PROJECTILE_ORDER = [
+  'rocket',
+  'earth',
+  'shadow',
+  'ice',
+  'poison',
+  'wind',
+  'fire',
+  'lightning',
+  'light',
+];
+
+// Projectiles are pre-rendered once into small offscreen sprites (a few animation frames),
+// so the game loop only does a cheap drawImage per bullet instead of gradients + shadowBlur.
+const SPRITE_SIZE = 64;
+const SPRITE_FRAMES = 6;
+const SPRITE_FPS = 15;
+const projectileSpriteCache = new Map();
+
+const renderProjectileSprite = (sctx, elements, color, t) => {
+  sctx.translate(SPRITE_SIZE / 2, SPRITE_SIZE / 2);
+  if (!elements.length) {
+    PROJECTILE_DRAWERS.default(sctx, t, color);
+    return;
+  }
+  const sorted = [...elements].sort(
+    (a, b) => PROJECTILE_ORDER.indexOf(a) - PROJECTILE_ORDER.indexOf(b)
+  );
+  sorted.forEach((el, idx) => {
+    const draw = PROJECTILE_DRAWERS[el];
+    if (!draw) return;
+    sctx.save();
+    if (idx > 0) {
+      // Second element of a fusion: smaller, additive glow layered on the first
+      sctx.scale(0.72, 0.72);
+      sctx.globalCompositeOperation = 'lighter';
+    }
+    draw(sctx, t + idx * 0.7, color);
+    sctx.restore();
+  });
+};
+
+const getProjectileSprites = (elements, color) => {
+  const key = `${elements.join('+') || 'default'}|${color}`;
+  let frames = projectileSpriteCache.get(key);
+  if (frames) return frames;
+  frames = [];
+  for (let f = 0; f < SPRITE_FRAMES; f++) {
+    const c = document.createElement('canvas');
+    c.width = SPRITE_SIZE;
+    c.height = SPRITE_SIZE;
+    // One full earth-shard rotation (5 rad/s) is spread over all frames.
+    renderProjectileSprite(
+      c.getContext('2d'),
+      elements,
+      color,
+      (f * Math.PI * 2) / 5 / SPRITE_FRAMES
+    );
+    frames.push(c);
+  }
+  projectileSpriteCache.set(key, frames);
+  return frames;
+};
+
+const drawElementProjectile = (ctx, l, time) => {
+  const elements = l.elements?.length ? l.elements : getWeaponElements(l.type);
+  const frames = getProjectileSprites(elements, l.color || '#F97316');
+  if (l.spritePhase === undefined) l.spritePhase = Math.floor(Math.random() * SPRITE_FRAMES);
+  const frame = frames[(Math.floor(time * SPRITE_FPS) + l.spritePhase) % SPRITE_FRAMES];
+  ctx.save();
+  ctx.translate(l.x, l.y);
+  ctx.rotate(Math.atan2(l.vy, l.vx) + Math.PI / 2); // 0 = facing up
+  ctx.drawImage(frame, -SPRITE_SIZE / 2, -SPRITE_SIZE / 2);
+  ctx.restore();
+};
+
+// Jarak pesawat di atas jari saat main pakai touch (px)
+const TOUCH_Y_OFFSET = 120;
+
+// Posisi vertikal awal pesawat di layar touch (rasio dari tinggi canvas)
+const TOUCH_START_Y_RATIO = 0.7;
+
+const isCoarsePointer = () =>
+  typeof window !== 'undefined' && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
+
 export default function MeteorShooterModal({ isOpen, onClose }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -1165,11 +1556,13 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
   const [soundOn, setSoundOn] = useState(true);
   const [weapon, setWeapon] = useState('default');
   const [activeAbilities, setActiveAbilities] = useState([]);
+  const [playerHp, setPlayerHp] = useState(100);
 
   const ABILITY_INFO = {
     triple: { name: 'Triple Shot', icon: '3X', color: '#F59E0B' },
     ricochet: { name: 'Ricochet', icon: '↗', color: '#34D399' },
     piercing: { name: 'Piercing', icon: '➤', color: '#A78BFA' },
+    rapid: { name: 'Rapid Fire', icon: '2X', color: '#F43F5E' },
   };
 
   const grantAbility = ability => {
@@ -1180,13 +1573,13 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       setActiveAbilities(current);
       return;
     }
-    // Keep only two abilities; the oldest one is replaced by the new pickup.
-    const next = [...current, ability].slice(-2);
+    // Keep only three abilities; the oldest one is replaced by the new pickup.
+    const next = [...current, ability].slice(-3);
     g.player.abilities = next;
     setActiveAbilities(next);
     g.bossVictory = {
       text:
-        current.length >= 2
+        current.length >= 3
           ? `🔄 ${ABILITY_INFO[ability].name.toUpperCase()} REPLACED OLDEST ABILITY!`
           : `✨ ${ABILITY_INFO[ability].name.toUpperCase()} UNLOCKED!`,
       timer: 2.5,
@@ -1204,6 +1597,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       tilt: 0,
       shield: false,
       tripleShotTime: 0,
+      hp: 100,
+      maxHp: 100,
       abilities: [],
       lastShotTime: 0,
       weapon: 'default',
@@ -1261,7 +1656,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     gameRef.current.height = targetH;
     if (gameState === 'start') {
       gameRef.current.player.x = targetW / 2;
-      gameRef.current.player.y = targetH - 80;
+      gameRef.current.player.y = isCoarsePointer() ? targetH * TOUCH_START_Y_RATIO : targetH - 80;
     }
   }, [gameState]);
 
@@ -1335,13 +1730,16 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     g.particles = [];
     g.powerups = [];
     g.player.x = g.width / 2;
-    g.player.y = g.height - 80;
+    // Di mobile pesawat mulai lebih ke depan (atas) supaya tidak tertutup jari
+    g.player.y = isCoarsePointer() ? g.height * TOUCH_START_Y_RATIO : g.height - 80;
     g.player.shield = false;
     g.player.bossSlowTimer = 0;
     g.player.tripleShotTime = 0;
     g.player.abilities = [];
     g.player.lastShotTime = 0;
     g.player.weapon = 'default';
+    g.player.hp = 100;
+    g.player.maxHp = 100;
     g.keys.shoot = false;
     g.cheatKeys = {};
     g.lastCheatTime = 0;
@@ -1428,26 +1826,23 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     if (gameState !== 'playing' || !canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const isTouch = Boolean(
-      (e.touches && e.touches.length > 0) ||
-      e.pointerType === 'touch' ||
-      ('ontouchstart' in window && (e.touches || e.pointerType))
+      (e.touches && e.touches.length > 0) || e.pointerType === 'touch' || isCoarsePointer()
     );
     const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
     const relativeX = clientX - rect.left;
     const relativeY = clientY - rect.top;
 
-    // Offset rocket upward ~55px so it's visible above the finger tip and not covered when playing on mobile
-    const touchYOffset = isTouch ? 55 : 0;
-    const targetY = relativeY - touchYOffset;
+    // Di mobile pesawat diposisikan jauh di depan (atas) jari supaya tidak tertutup
+    const targetY = relativeY - (isTouch ? TOUCH_Y_OFFSET : 0);
 
     if (relativeX >= 15 && relativeX <= gameRef.current.width - 15) {
       gameRef.current.player.x = relativeX;
     }
-    // Allow responsive vertical movement
-    if (targetY >= gameRef.current.height * 0.35 && targetY <= gameRef.current.height - 48) {
-      gameRef.current.player.y = targetY;
-    }
+    // Clamp (bukan skip) supaya pesawat tetap mengikuti jari walau offset besar
+    const minY = gameRef.current.height * 0.35;
+    const maxY = gameRef.current.height - 48;
+    gameRef.current.player.y = Math.max(minY, Math.min(maxY, targetY));
   };
 
   const handlePointerDown = e => {
@@ -1491,18 +1886,21 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           star.x = Math.random() * width;
         }
         ctx.globalAlpha = star.alpha;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(star.x, star.y, star.size, star.size);
       });
       ctx.globalAlpha = 1.0;
 
       // Accretion disk ambient glow at top
-      const glowGrad = ctx.createRadialGradient(width / 2, -20, 10, width / 2, -20, width * 0.8);
-      glowGrad.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
-      glowGrad.addColorStop(0.5, 'rgba(139, 92, 246, 0.15)');
-      glowGrad.addColorStop(1, 'transparent');
-      ctx.fillStyle = glowGrad;
+      const glowKey = `${width}x${height}`;
+      if (g.glowKey !== glowKey) {
+        const grad = ctx.createRadialGradient(width / 2, -20, 10, width / 2, -20, width * 0.8);
+        grad.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
+        grad.addColorStop(0.5, 'rgba(139, 92, 246, 0.15)');
+        grad.addColorStop(1, 'transparent');
+        g.glowGrad = grad;
+        g.glowKey = glowKey;
+      }
+      ctx.fillStyle = g.glowGrad;
       ctx.fillRect(0, 0, width, height);
 
       // 2. PLAYING UPDATES
@@ -1532,9 +1930,13 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         const currentWep = p.weapon || 'default';
         const wepInfo = WEAPONS[currentWep] || WEAPONS.default;
         const weaponBalance = WEAPON_BALANCE[currentWep] || {};
-        const shootInterval =
+        const baseShootInterval =
           weaponBalance.interval ??
           (currentWep === 'rocket' ? 280 : currentWep === 'lightning' ? 150 : 180);
+        // Rapid Fire ability = 2x attack speed
+        const shootInterval = playerAbilities.includes('rapid')
+          ? baseShootInterval / 2
+          : baseShootInterval;
 
         if (g.keys.shoot && currentTime - p.lastShotTime > shootInterval) {
           p.lastShotTime = currentTime;
@@ -1742,114 +2144,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         l.y += l.vy;
 
         // Custom visuals for each elemental weapon
-        ctx.save();
-        const laserElements = l.elements || getWeaponElements(l.type);
-        if (laserElements.includes('rocket')) {
-          ctx.translate(l.x, l.y);
-          ctx.rotate(Math.atan2(l.vy, l.vx) + Math.PI / 2);
-          ctx.fillStyle = l.color || '#F59E0B';
-          ctx.shadowColor = l.color || '#F97316';
-          ctx.shadowBlur = 10;
-          ctx.fillRect(-2.5, -6, 5, 12);
-          ctx.fillStyle = '#EF4444';
-          ctx.beginPath();
-          ctx.moveTo(-2.5, -6);
-          ctx.lineTo(0, -11);
-          ctx.lineTo(2.5, -6);
-          ctx.closePath();
-          ctx.fill();
-        } else if (laserElements.includes('lightning')) {
-          ctx.shadowColor = l.color || '#FACC15';
-          ctx.shadowBlur = 14;
-          ctx.strokeStyle = l.color || '#FACC15';
-          ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          ctx.moveTo(l.x, l.y);
-          ctx.lineTo(l.x + (Math.random() - 0.5) * 5, l.y + 6);
-          ctx.lineTo(l.x, l.y + 14);
-          ctx.stroke();
-        } else if (laserElements.includes('light')) {
-          ctx.shadowColor = l.color || '#FEF08A';
-          ctx.shadowBlur = 18;
-          ctx.strokeStyle = l.color || '#FEF08A';
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.moveTo(l.x, l.y + 8);
-          ctx.lineTo(l.x, l.y - 8);
-          ctx.stroke();
-        } else if (laserElements.includes('wind')) {
-          ctx.shadowColor = l.color || '#67E8F9';
-          ctx.shadowBlur = 12;
-          ctx.fillStyle = l.color || '#67E8F9';
-          ctx.beginPath();
-          ctx.moveTo(l.x, l.y - 9);
-          ctx.lineTo(l.x + 4, l.y);
-          ctx.lineTo(l.x, l.y + 9);
-          ctx.lineTo(l.x - 4, l.y);
-          ctx.closePath();
-          ctx.fill();
-        } else if (laserElements.includes('ice')) {
-          ctx.shadowColor = l.color || '#38BDF8';
-          ctx.shadowBlur = 12;
-          ctx.fillStyle = l.color || '#38BDF8';
-          ctx.beginPath();
-          ctx.moveTo(l.x, l.y - 7);
-          ctx.lineTo(l.x + 3.5, l.y);
-          ctx.lineTo(l.x, l.y + 7);
-          ctx.lineTo(l.x - 3.5, l.y);
-          ctx.closePath();
-          ctx.fill();
-          ctx.fillStyle = '#FFFFFF';
-          ctx.beginPath();
-          ctx.arc(l.x, l.y, 1.5, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (laserElements.includes('earth')) {
-          ctx.shadowColor = l.color || '#C08457';
-          ctx.shadowBlur = 10;
-          ctx.fillStyle = l.color || '#C08457';
-          ctx.beginPath();
-          ctx.moveTo(l.x, l.y - 6);
-          ctx.lineTo(l.x + 5, l.y + 3);
-          ctx.lineTo(l.x - 4, l.y + 5);
-          ctx.closePath();
-          ctx.fill();
-        } else if (laserElements.includes('shadow')) {
-          ctx.shadowColor = l.color || '#C084FC';
-          ctx.shadowBlur = 15;
-          ctx.fillStyle = l.color || '#C084FC';
-          ctx.beginPath();
-          ctx.arc(l.x, l.y, 5, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (laserElements.includes('poison')) {
-          ctx.shadowColor = l.color || '#A3E635';
-          ctx.shadowBlur = 14;
-          ctx.fillStyle = l.color || '#A3E635';
-          ctx.beginPath();
-          ctx.arc(l.x, l.y, 4.5, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (laserElements.includes('fire')) {
-          ctx.shadowColor = '#EF4444';
-          ctx.shadowBlur = 14;
-          ctx.fillStyle = '#EF4444';
-          ctx.beginPath();
-          ctx.arc(l.x, l.y, 4.5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#FDE047';
-          ctx.beginPath();
-          ctx.arc(l.x, l.y, 2.2, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          // Standard laser
-          ctx.shadowColor = l.color;
-          ctx.shadowBlur = 10;
-          ctx.strokeStyle = l.color;
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(l.x, l.y);
-          ctx.lineTo(l.x - l.vx * 0.8, l.y + 10);
-          ctx.stroke();
-        }
-        ctx.restore();
+        drawElementProjectile(ctx, l, currentTime / 1000);
 
         // Offscreen check
         if (l.y < -25 || l.x < -15 || l.x > width + 15) {
@@ -1875,17 +2170,53 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         // Meteor Trail / Aura
         ctx.save();
         ctx.translate(m.x, m.y);
+
+        // Fire trail behind meteor (upward, since meteor moves downward)
+        if (m.type === 'fast' || m.type === 'huge') {
+          const trailLen = m.type === 'huge' ? m.radius * 1.8 : m.radius * 1.4;
+          const trailGrad = ctx.createLinearGradient(0, -m.radius, 0, -m.radius - trailLen);
+          trailGrad.addColorStop(0, m.type === 'fast' ? 'rgba(239,68,68,0.7)' : 'rgba(168,85,247,0.6)');
+          trailGrad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = trailGrad;
+          ctx.beginPath();
+          ctx.ellipse(0, -m.radius - trailLen / 2, m.radius * 0.45, trailLen / 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          const trailGrad = ctx.createLinearGradient(0, -m.radius, 0, -m.radius - m.radius * 1.2);
+          trailGrad.addColorStop(0, 'rgba(253,186,116,0.5)');
+          trailGrad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = trailGrad;
+          ctx.beginPath();
+          ctx.ellipse(0, -m.radius - m.radius * 0.6, m.radius * 0.3, m.radius * 0.6, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
         ctx.rotate(m.rotation);
 
+        // Outer glow ring
+        ctx.shadowColor = m.type === 'huge' ? '#A855F7' : m.type === 'fast' ? '#EF4444' : '#F97316';
+        ctx.shadowBlur = m.type === 'huge' ? 18 : 10;
+
         // Core rock gradient
-        const rockGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, m.radius);
-        rockGrad.addColorStop(0, '#FDBA74');
-        rockGrad.addColorStop(0.35, m.color);
-        rockGrad.addColorStop(1, '#1E112A');
+        const rockGrad = ctx.createRadialGradient(-m.radius * 0.25, -m.radius * 0.25, 1, 0, 0, m.radius);
+        if (m.type === 'huge') {
+          rockGrad.addColorStop(0, '#D8B4FE');
+          rockGrad.addColorStop(0.3, '#A855F7');
+          rockGrad.addColorStop(0.7, '#581C87');
+          rockGrad.addColorStop(1, '#0D0015');
+        } else if (m.type === 'fast') {
+          rockGrad.addColorStop(0, '#FCA5A5');
+          rockGrad.addColorStop(0.3, '#EF4444');
+          rockGrad.addColorStop(0.7, '#7F1D1D');
+          rockGrad.addColorStop(1, '#1A0000');
+        } else {
+          rockGrad.addColorStop(0, '#FDBA74');
+          rockGrad.addColorStop(0.3, '#E06D28');
+          rockGrad.addColorStop(0.7, '#7C2D12');
+          rockGrad.addColorStop(1, '#1E0800');
+        }
 
         ctx.fillStyle = rockGrad;
-        ctx.shadowColor = m.color;
-        ctx.shadowBlur = m.type === 'huge' ? 18 : 8;
         ctx.beginPath();
         m.vertices.forEach((v, idx) => {
           if (idx === 0) ctx.moveTo(v.x, v.y);
@@ -1894,18 +2225,52 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.closePath();
         ctx.fill();
 
-        // Inner glowing craters
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        // Edge highlight stroke
+        ctx.strokeStyle = m.type === 'huge' ? 'rgba(216,180,254,0.45)' : m.type === 'fast' ? 'rgba(252,165,165,0.4)' : 'rgba(253,186,116,0.35)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // Craters
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
         ctx.beginPath();
         ctx.arc(-m.radius * 0.3, -m.radius * 0.2, m.radius * 0.22, 0, Math.PI * 2);
         ctx.fill();
+        if (m.radius > 18) {
+          ctx.fillStyle = 'rgba(0,0,0,0.35)';
+          ctx.beginPath();
+          ctx.arc(m.radius * 0.25, m.radius * 0.15, m.radius * 0.15, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Crater highlight rim
+        ctx.strokeStyle = m.type === 'huge' ? 'rgba(216,180,254,0.25)' : 'rgba(253,186,116,0.2)';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.arc(-m.radius * 0.3, -m.radius * 0.2, m.radius * 0.22, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // HP bar on meteor (only if multi-hit)
+        if (m.maxHp > 1) {
+          const bw = m.radius * 1.6;
+          const bx = -bw / 2;
+          const by = m.radius + 4;
+          ctx.fillStyle = 'rgba(0,0,0,0.55)';
+          ctx.fillRect(bx - 1, by - 1, bw + 2, 6);
+          ctx.fillStyle = m.type === 'huge' ? '#A855F7' : '#F97316';
+          ctx.fillRect(bx, by, bw * Math.max(0, m.hp / m.maxHp), 4);
+        }
 
         // Frost crystal overlay if slowed by Ice weapon
         if (m.slowTimer > 0) {
-          ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
           ctx.beginPath();
-          ctx.arc(0, 0, m.radius + 2, 0, Math.PI * 2);
+          ctx.arc(0, 0, m.radius + 3, 0, Math.PI * 2);
           ctx.fill();
+          ctx.strokeStyle = 'rgba(147,210,252,0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, m.radius + 3, 0, Math.PI * 2);
+          ctx.stroke();
         }
         ctx.restore();
 
@@ -2091,8 +2456,17 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                 });
               }
 
-              // Power-up Drop Chance
-              if (Math.random() < Math.min(0.28, 0.16 + g.wave * 0.01)) {
+              // Power-up & Health Drop Chance
+              // Drop health healing 5% with RNG chance (~22%)
+              if (Math.random() < 0.22) {
+                g.powerups.push({
+                  x: m.x,
+                  y: m.y,
+                  type: 'health',
+                  vy: 2.0,
+                  pulse: 0,
+                });
+              } else if (Math.random() < Math.min(0.28, 0.16 + g.wave * 0.01)) {
                 const pType = Math.random() > 0.5 ? 'triple' : 'shield';
                 g.powerups.push({
                   x: m.x,
@@ -2136,15 +2510,22 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             if (p.shield) {
               p.shield = false;
             } else {
-              g.lives -= 1;
-              setLives(g.lives);
-              if (g.lives <= 0) {
-                // Game Over!
-                sfx.gameOver();
-                setGameState('gameover');
-                if (g.score > highScore) {
-                  setHighScore(g.score);
-                  localStorage.setItem('meteor_highscore', g.score);
+              const dmgAmt = m.type === 'huge' ? 35 : m.type === 'fast' ? 20 : 25;
+              p.hp = Math.max(0, (p.hp ?? 100) - dmgAmt);
+              setPlayerHp(p.hp);
+              if (p.hp <= 0) {
+                p.hp = 100;
+                g.lives -= 1;
+                setLives(g.lives);
+                setPlayerHp(100);
+                if (g.lives <= 0) {
+                  // Game Over!
+                  sfx.gameOver();
+                  setGameState('gameover');
+                  if (g.score > highScore) {
+                    setHighScore(g.score);
+                    localStorage.setItem('meteor_highscore', g.score);
+                  }
                 }
               }
             }
@@ -2209,48 +2590,49 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
 
           switch (skill.id) {
             case 'aimed': {
-              // Hunter Shot is deliberately less accurate, slower, and short-lived.
-              // Disable elemental homing for this skill so it remains dodgeable.
-              const hunterAngle = aimAngle + (Math.random() - 0.5) * 0.42;
-              makeBossShot(hunterAngle, 2.55, 4.8);
+              // Hunter Shot — single aimed shot, moderate speed, limited lifetime
+              const hunterAngle = aimAngle + (Math.random() - 0.5) * 0.28;
+              const hunterSpeed = 2.8 + g.wave * 0.1;
+              makeBossShot(hunterAngle, hunterSpeed, 5.5);
               const hunterShot = g.bossProjectiles[g.bossProjectiles.length - 1];
               if (hunterShot) {
-                const hunterSpeed = 2.55;
-                hunterShot.vx = Math.cos(hunterAngle) * hunterSpeed;
-                hunterShot.vy = Math.sin(hunterAngle) * hunterSpeed;
-                hunterShot.radius = 4.8;
                 hunterShot.homing = false;
-                hunterShot.lifetime = 1.45;
+                hunterShot.lifetime = 1.8;
               }
               break;
             }
             case 'fan':
-              for (let n = -2; n <= 2; n++) makeBossShot(Math.PI / 2 + n * 0.22, 3.5, 6.5);
+              // Fan — 5 shots spread, moderate speed
+              for (let n = -2; n <= 2; n++)
+                makeBossShot(Math.PI / 2 + n * 0.26, 3.0 + g.wave * 0.05, 5.8);
               break;
             case 'radial':
-              for (let n = 0; n < 10; n++)
-                makeBossShot((Math.PI * 2 * n) / 10 + b.rotation, 3.0, 6);
+              // Radial — 8 bullets full circle, slower speed to be dodgeable
+              for (let n = 0; n < 8; n++)
+                makeBossShot((Math.PI * 2 * n) / 8 + b.rotation, 2.5 + g.wave * 0.08, 5.5);
               break;
             case 'burst':
-              for (let n = -1; n <= 1; n++) makeBossShot(aimAngle + n * 0.18, 4.0, 6.5);
+              // Burst — 3 aimed shots with slight angle spread
+              for (let n = -1; n <= 1; n++)
+                makeBossShot(aimAngle + n * 0.22, 3.4 + g.wave * 0.06, 5.8);
               break;
             case 'cross':
+              // Cross — 2 origin points x 3 shots each
               for (let n = -1; n <= 1; n++) {
-                makeBossShot(Math.PI / 2 + n * 0.38, 3.6, 6, b.x - b.radius * 0.55, originY);
-                makeBossShot(Math.PI / 2 + n * 0.38, 3.6, 6, b.x + b.radius * 0.55, originY);
+                makeBossShot(Math.PI / 2 + n * 0.32, 3.0, 5.5, b.x - b.radius * 0.55, originY);
+                makeBossShot(Math.PI / 2 + n * 0.32, 3.0, 5.5, b.x + b.radius * 0.55, originY);
               }
               break;
             case 'rain':
-              for (let n = 0; n < 7; n++) {
-                const spreadX = b.x + (Math.random() - 0.5) * Math.min(width * 0.8, 260);
+              // Rain — 5 shots (was 7), spread reduced
+              for (let n = 0; n < 5; n++) {
+                const spreadX = b.x + (Math.random() - 0.5) * Math.min(width * 0.65, 200);
                 g.bossProjectiles.push({
-                  x: Math.max(12, Math.min(width - 12, spreadX)),
+                  x: Math.max(16, Math.min(width - 16, spreadX)),
                   y: originY,
-                  vx: (p.x - spreadX) * 0.006,
-                  vy: (3.2 + Math.random() * 0.8) * (bossElements.includes('lightning') ? 1.12 : 1),
-                  radius:
-                    5.5 *
-                    (bossElements.includes('fire') || bossElements.includes('poison') ? 1.16 : 1),
+                  vx: (p.x - spreadX) * 0.004,
+                  vy: (2.8 + Math.random() * 0.6 + g.wave * 0.06) * (bossElements.includes('lightning') ? 1.1 : 1),
+                  radius: 5.2 * (bossElements.includes('fire') || bossElements.includes('poison') ? 1.1 : 1),
                   color: baseColor,
                   elements: bossElements,
                   homing: bossElements.includes('rocket'),
@@ -2259,37 +2641,76 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
               }
               break;
             case 'spiral':
-              b.spiralAngle = (b.spiralAngle || 0) + 0.45;
-              for (let n = 0; n < 4; n++) {
-                makeBossShot(b.spiralAngle + (Math.PI * 2 * n) / 4, 3.2, 6);
+              // Spiral — 3 arms (was 4), slower rotation
+              b.spiralAngle = (b.spiralAngle || 0) + 0.38;
+              for (let n = 0; n < 3; n++) {
+                makeBossShot(b.spiralAngle + (Math.PI * 2 * n) / 3, 2.8 + g.wave * 0.07, 5.5);
               }
               break;
             default:
-              makeBossShot(aimAngle, 3.7, 6.5);
+              makeBossShot(aimAngle, 3.2, 5.8);
           }
         }
         // Render Boss Rock & Energy Shield
         ctx.save();
         ctx.translate(b.x, b.y);
+
+        // Rotating outer energy rings
+        const ringTime = currentTime / 1000;
+        for (let ri = 0; ri < 3; ri++) {
+          const ringR = b.radius + 8 + ri * 7;
+          const ringAlpha = 0.25 - ri * 0.06;
+          const ringStart = (ringTime * (ri % 2 === 0 ? 1.2 : -0.9)) % (Math.PI * 2);
+          ctx.strokeStyle = b.theme.secondary;
+          ctx.globalAlpha = ringAlpha;
+          ctx.lineWidth = 1.8 - ri * 0.4;
+          ctx.beginPath();
+          ctx.arc(0, 0, ringR, ringStart, ringStart + Math.PI * 1.6);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+
+        // Orbiting energy nodes
+        for (let ni = 0; ni < 3; ni++) {
+          const nodeAngle = ringTime * 1.4 + (ni * Math.PI * 2) / 3;
+          const nodeR = b.radius + 14;
+          const nx = Math.cos(nodeAngle) * nodeR;
+          const ny = Math.sin(nodeAngle) * nodeR;
+          ctx.shadowColor = b.theme.core;
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = b.theme.core;
+          ctx.beginPath();
+          ctx.arc(nx, ny, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+
         ctx.rotate(b.rotation);
 
-        // Radiant Outer Aura
+        // Outer glow aura on body
         ctx.shadowColor = b.theme.secondary;
-        ctx.shadowBlur = 24;
+        ctx.shadowBlur = 22;
         ctx.strokeStyle = b.theme.secondary;
-        ctx.lineWidth = 2.8;
+        ctx.lineWidth = 2.2;
         ctx.beginPath();
-        ctx.arc(0, 0, b.radius + 6, 0, Math.PI * 2);
+        b.vertices.forEach((v, idx) => {
+          if (idx === 0) ctx.moveTo(v.x, v.y);
+          else ctx.lineTo(v.x, v.y);
+        });
+        ctx.closePath();
         ctx.stroke();
 
         // Polygon Rock Core
         if (b.flashTimer > 0) {
           ctx.fillStyle = '#FFFFFF';
+          ctx.shadowColor = '#FFFFFF';
+          ctx.shadowBlur = 30;
         } else {
-          const bossGrad = ctx.createRadialGradient(0, 0, 4, 0, 0, b.radius);
+          const bossGrad = ctx.createRadialGradient(-b.radius * 0.2, -b.radius * 0.2, 3, 0, 0, b.radius);
           bossGrad.addColorStop(0, b.theme.core);
-          bossGrad.addColorStop(0.35, b.theme.primary);
-          bossGrad.addColorStop(1, '#080214');
+          bossGrad.addColorStop(0.25, b.theme.secondary);
+          bossGrad.addColorStop(0.6, b.theme.primary);
+          bossGrad.addColorStop(1, '#050112');
           ctx.fillStyle = bossGrad;
         }
 
@@ -2301,45 +2722,108 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.closePath();
         ctx.fill();
 
-        // Glowing center core
-        ctx.fillStyle = b.theme.core;
+        // Surface detail lines
+        if (b.flashTimer <= 0) {
+          ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+          ctx.lineWidth = 0.8;
+          for (let si = 0; si < 4; si++) {
+            const sv = b.vertices[si * Math.floor(b.vertices.length / 4)];
+            if (sv) {
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.lineTo(sv.x * 0.7, sv.y * 0.7);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Glowing pulsing center core
+        const coreSize = b.radius * 0.28 + Math.sin(ringTime * 3) * b.radius * 0.04;
+        const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, coreSize);
+        coreGrad.addColorStop(0, '#FFFFFF');
+        coreGrad.addColorStop(0.4, b.theme.core);
+        coreGrad.addColorStop(1, b.theme.primary);
+        ctx.shadowColor = b.theme.core;
+        ctx.shadowBlur = 20;
+        ctx.fillStyle = coreGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, b.radius * 0.28, 0, Math.PI * 2);
+        ctx.arc(0, 0, coreSize, 0, Math.PI * 2);
         ctx.fill();
+
         ctx.restore();
 
-        // Top Screen Boss Health Bar
-        const barW = Math.min(width - 40, 280);
-        const barH = 10;
+        // Top Screen Boss Health Bar — enhanced
+        const barW = Math.min(width - 32, 320);
+        const barH = 13;
         const barX = (width - barW) / 2;
-        const barY = 16;
+        const barY = 18;
         const hpRatio = Math.max(0, b.hp / b.maxHp);
 
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-        ctx.fillRect(barX - 2, barY - 14, barW + 4, barH + 18);
-        ctx.strokeStyle = b.theme.secondary;
+        // Background panel
+        ctx.fillStyle = 'rgba(0,0,0,0.82)';
+        ctx.fillRect(barX - 6, barY - 16, barW + 12, barH + 30);
+        ctx.strokeStyle = b.theme.secondary + '88';
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(barX - 6, barY - 16, barW + 12, barH + 30);
+
+        // Boss name
+        ctx.fillStyle = b.theme.core;
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.shadowColor = b.theme.secondary;
+        ctx.shadowBlur = 6;
+        ctx.fillText(`⚡ ${b.name}`, width / 2, barY - 2);
+        ctx.shadowBlur = 0;
+
+        // HP bar background
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fillRect(barX, barY, barW, barH);
+        ctx.strokeStyle = b.theme.secondary + 'AA';
         ctx.lineWidth = 1;
         ctx.strokeRect(barX, barY, barW, barH);
 
-        const hpGrad = ctx.createLinearGradient(barX, barY, barX + barW * hpRatio, barY);
-        hpGrad.addColorStop(0, b.theme.primary);
-        hpGrad.addColorStop(1, b.theme.secondary);
+        // HP bar fill with gradient + color by phase
+        const hpGrad = ctx.createLinearGradient(barX, barY, barX + barW, barY);
+        if (hpRatio > 0.6) {
+          hpGrad.addColorStop(0, b.theme.primary);
+          hpGrad.addColorStop(1, b.theme.secondary);
+        } else if (hpRatio > 0.3) {
+          hpGrad.addColorStop(0, '#F59E0B');
+          hpGrad.addColorStop(1, '#F97316');
+        } else {
+          hpGrad.addColorStop(0, '#DC2626');
+          hpGrad.addColorStop(1, '#EF4444');
+        }
         ctx.fillStyle = hpGrad;
         ctx.fillRect(barX, barY, barW * hpRatio, barH);
 
+        // Segment ticks every 25%
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+        ctx.lineWidth = 1;
+        for (let seg = 1; seg < 4; seg++) {
+          const sx = barX + barW * seg * 0.25;
+          ctx.beginPath(); ctx.moveTo(sx, barY); ctx.lineTo(sx, barY + barH); ctx.stroke();
+        }
+
+        // HP text inside bar
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 9.5px monospace';
+        ctx.font = 'bold 8px monospace';
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(`⚡ BOSS: ${b.name} (${Math.ceil(b.hp)}/${b.maxHp} HP)`, width / 2, barY - 2);
-        ctx.font = '8px monospace';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${Math.ceil(b.hp)} / ${b.maxHp} HP`, width / 2, barY + barH / 2);
+
+        // Skill label below bar
+        ctx.font = '7.5px monospace';
         ctx.fillStyle = b.skills?.[0]?.color || b.theme.secondary;
+        ctx.textBaseline = 'top';
         const skillLabel = (b.skills || []).map(skill => skill.name).join(' • ');
         ctx.fillText(
-          `${b.elementCombo?.icon || '⚡'} ${b.elementCombo?.name || 'Elemental Boss'} | SKILLS: ${skillLabel}`,
+          `${b.elementCombo?.icon || '⚡'} ${b.elementCombo?.name || ''} | ${skillLabel}`,
           width / 2,
-          barY + barH + 11
+          barY + barH + 3
         );
+        ctx.shadowBlur = 0;
 
         // Player Laser Collision with Boss
         for (let j = g.lasers.length - 1; j >= 0; j--) {
@@ -2430,7 +2914,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
               const skillOrder = ELEMENT_SKILLS;
               const droppedSkill = skillOrder[(g.wave - 1) % skillOrder.length];
 
-              const abilityDrops = ['triple', 'ricochet', 'piercing'];
+              const abilityDrops = ['triple', 'ricochet', 'piercing', 'rapid'];
               const droppedAbility = abilityDrops[Math.floor(Math.random() * abilityDrops.length)];
               g.powerups.push(
                 { x: b.x, y: b.y - 14, type: 'skill', weaponType: droppedSkill, vy: 1.6, pulse: 0 },
@@ -2467,14 +2951,20 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             if (p.shield) {
               p.shield = false;
             } else {
-              g.lives -= 1;
-              setLives(g.lives);
-              if (g.lives <= 0) {
-                sfx.gameOver();
-                setGameState('gameover');
-                if (g.score > highScore) {
-                  setHighScore(g.score);
-                  localStorage.setItem('meteor_highscore', g.score);
+              p.hp = Math.max(0, (p.hp ?? 100) - 40);
+              setPlayerHp(p.hp);
+              if (p.hp <= 0) {
+                p.hp = 100;
+                g.lives -= 1;
+                setLives(g.lives);
+                setPlayerHp(100);
+                if (g.lives <= 0) {
+                  sfx.gameOver();
+                  setGameState('gameover');
+                  if (g.score > highScore) {
+                    setHighScore(g.score);
+                    localStorage.setItem('meteor_highscore', g.score);
+                  }
                 }
               }
             }
@@ -2511,8 +3001,12 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         bp.y += bp.vy;
 
         ctx.save();
-        ctx.shadowColor = bp.color;
-        ctx.shadowBlur = 12;
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = bp.color;
+        ctx.beginPath();
+        ctx.arc(bp.x, bp.y, bp.radius * 1.7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
         ctx.fillStyle = bp.color;
         ctx.beginPath();
         ctx.arc(bp.x, bp.y, bp.radius, 0, Math.PI * 2);
@@ -2550,14 +3044,20 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           if (p.shield) {
             p.shield = false;
           } else {
-            g.lives -= 1;
-            setLives(g.lives);
-            if (g.lives <= 0) {
-              sfx.gameOver();
-              setGameState('gameover');
-              if (g.score > highScore) {
-                setHighScore(g.score);
-                localStorage.setItem('meteor_highscore', g.score);
+            p.hp = Math.max(0, (p.hp ?? 100) - 20);
+            setPlayerHp(p.hp);
+            if (p.hp <= 0) {
+              p.hp = 100;
+              g.lives -= 1;
+              setLives(g.lives);
+              setPlayerHp(100);
+              if (g.lives <= 0) {
+                sfx.gameOver();
+                setGameState('gameover');
+                if (g.score > highScore) {
+                  setHighScore(g.score);
+                  localStorage.setItem('meteor_highscore', g.score);
+                }
               }
             }
           }
@@ -2577,7 +3077,35 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         pu.y += pu.vy;
         pu.pulse += 0.08;
 
-        if (pu.type === 'skill') {
+        if (pu.type === 'health') {
+          // Draw health orb
+          const glowSize = Math.sin(pu.pulse) * 2 + 11;
+          ctx.save();
+          ctx.shadowColor = '#22C55E';
+          ctx.shadowBlur = 18;
+          ctx.fillStyle = '#15803D';
+          ctx.beginPath();
+          ctx.arc(pu.x, pu.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#4ADE80';
+          ctx.beginPath();
+          ctx.arc(pu.x, pu.y, glowSize * 0.65, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#86EFAC';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(pu.x, pu.y, glowSize + 3, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(pu.x - 1.2, pu.y - 5, 2.4, 10);
+          ctx.fillRect(pu.x - 5, pu.y - 1.2, 10, 2.4);
+          ctx.fillStyle = '#BBF7D0';
+          ctx.font = 'bold 7px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('+5%', pu.x, pu.y + glowSize + 8);
+          ctx.restore();
+        } else if (pu.type === 'skill') {
           const wep = WEAPONS[pu.weaponType] || WEAPONS.fire;
           const glowSize = Math.sin(pu.pulse) * 3 + 14;
           ctx.save();
@@ -2626,7 +3154,12 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         // Powerup collision with player
         const dist = Math.hypot(pu.x - p.x, pu.y - p.y);
         if (dist < 28) {
-          if (pu.type === 'skill') {
+          if (pu.type === 'health') {
+            const healAmt = Math.round((p.maxHp ?? 100) * 0.05);
+            p.hp = Math.min(p.maxHp ?? 100, (p.hp ?? 100) + healAmt);
+            setPlayerHp(p.hp);
+            sfx.powerup();
+          } else if (pu.type === 'skill') {
             sfx.skillUnlocked();
             const previousWeapon = p.weapon || 'default';
             const combinedWeapon = combineWeapons(previousWeapon, pu.weaponType);
@@ -2680,7 +3213,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         }
       }
 
-      // 6. PARTICLES
+      // 6. PARTICLES (capped; drop the oldest when too many)
+      if (g.particles.length > 180) g.particles.splice(0, g.particles.length - 180);
       for (let i = g.particles.length - 1; i >= 0; i--) {
         const pt = g.particles[i];
         pt.x += pt.vx;
@@ -2692,16 +3226,11 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           continue;
         }
 
-        ctx.save();
         ctx.globalAlpha = Math.max(0, pt.alpha);
         ctx.fillStyle = pt.color;
-        ctx.shadowColor = pt.color;
-        ctx.shadowBlur = 6;
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
+        ctx.fillRect(pt.x - pt.size, pt.y - pt.size, pt.size * 2, pt.size * 2);
       }
+      ctx.globalAlpha = 1;
 
       // 7. DRAW PLAYER SPACESHIP
       if (gameState !== 'gameover') {
@@ -2709,63 +3238,173 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         ctx.translate(p.x, p.y);
         ctx.rotate(p.tilt);
 
-        // Thruster flame with pulsing animation
-        const flameLength = 14 + Math.random() * 8;
-        const flameGrad = ctx.createLinearGradient(0, 15, 0, 15 + flameLength);
-        flameGrad.addColorStop(0, '#F59E0B');
-        flameGrad.addColorStop(0.5, '#F97316');
-        flameGrad.addColorStop(1, 'transparent');
-        ctx.fillStyle = flameGrad;
+        const shipTime = currentTime / 1000;
+
+        // Engine glow underneath
+        const engineGlow = ctx.createRadialGradient(0, 18, 0, 0, 18, 20);
+        engineGlow.addColorStop(0, 'rgba(139,92,246,0.35)');
+        engineGlow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = engineGlow;
         ctx.beginPath();
-        ctx.moveTo(-6, 16);
-        ctx.lineTo(0, 16 + flameLength);
-        ctx.lineTo(6, 16);
-        ctx.closePath();
+        ctx.arc(0, 18, 20, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hull / Body (Futuristic Interceptor)
-        ctx.shadowColor = '#8B5CF6';
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = '#120B29';
-        ctx.strokeStyle = '#8B5CF6';
-        ctx.lineWidth = 1.8;
-
+        // Left engine flame
+        const flameL = 13 + Math.sin(shipTime * 18) * 5;
+        const flameGradL = ctx.createLinearGradient(-7, 14, -7, 14 + flameL);
+        flameGradL.addColorStop(0, '#FDE047');
+        flameGradL.addColorStop(0.4, '#F97316');
+        flameGradL.addColorStop(1, 'rgba(239,68,68,0)');
+        ctx.fillStyle = flameGradL;
         ctx.beginPath();
-        ctx.moveTo(0, -20); // nose tip
-        ctx.lineTo(16, 14); // right wing tip
-        ctx.lineTo(8, 10);
-        ctx.lineTo(0, 14); // rear center
-        ctx.lineTo(-8, 10);
-        ctx.lineTo(-16, 14); // left wing tip
+        ctx.moveTo(-10, 14);
+        ctx.quadraticCurveTo(-7 + Math.sin(shipTime * 22) * 1.5, 14 + flameL * 0.6, -7, 14 + flameL);
+        ctx.quadraticCurveTo(-4, 14 + flameL * 0.6, -4, 14);
+        ctx.fill();
+
+        // Right engine flame
+        const flameR = 13 + Math.sin(shipTime * 18 + 1.2) * 5;
+        const flameGradR = ctx.createLinearGradient(7, 14, 7, 14 + flameR);
+        flameGradR.addColorStop(0, '#FDE047');
+        flameGradR.addColorStop(0.4, '#F97316');
+        flameGradR.addColorStop(1, 'rgba(239,68,68,0)');
+        ctx.fillStyle = flameGradR;
+        ctx.beginPath();
+        ctx.moveTo(4, 14);
+        ctx.quadraticCurveTo(7 + Math.sin(shipTime * 22 + 0.8) * 1.5, 14 + flameR * 0.6, 7, 14 + flameR);
+        ctx.quadraticCurveTo(10, 14 + flameR * 0.6, 10, 14);
+        ctx.fill();
+
+        // Hull glow
+        ctx.shadowColor = '#8B5CF6';
+        ctx.shadowBlur = 16;
+
+        // Main body
+        ctx.fillStyle = '#0D0820';
+        ctx.strokeStyle = '#7C3AED';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(0, -22);
+        ctx.lineTo(5, -12);
+        ctx.lineTo(18, 12);
+        ctx.lineTo(10, 9);
+        ctx.lineTo(6, 14);
+        ctx.lineTo(0, 12);
+        ctx.lineTo(-6, 14);
+        ctx.lineTo(-10, 9);
+        ctx.lineTo(-18, 12);
+        ctx.lineTo(-5, -12);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
-        // Cockpit canopy glow (Cyan Photon)
-        ctx.fillStyle = '#06B6D4';
-        ctx.shadowColor = '#06B6D4';
-        ctx.shadowBlur = 8;
+        // Wing accent stripes
+        ctx.fillStyle = '#4C1D95';
         ctx.beginPath();
-        ctx.ellipse(0, -4, 3.5, 9, 0, 0, Math.PI * 2);
+        ctx.moveTo(-18, 12); ctx.lineTo(-10, 9); ctx.lineTo(-12, 13); ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(18, 12); ctx.lineTo(10, 9); ctx.lineTo(12, 13); ctx.closePath();
         ctx.fill();
 
-        // Wing cannons accent
-        ctx.fillStyle = '#F97316';
-        ctx.fillRect(-14, 2, 2.5, 6);
-        ctx.fillRect(11.5, 2, 2.5, 6);
+        // Center spine
+        ctx.strokeStyle = 'rgba(139,92,246,0.5)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, -22);
+        ctx.lineTo(0, 12);
+        ctx.stroke();
 
-        // Energy Shield Sphere
+        // Cockpit canopy
+        const canopyGrad = ctx.createRadialGradient(-1.5, -8, 1, 0, -5, 8);
+        canopyGrad.addColorStop(0, '#E0F2FE');
+        canopyGrad.addColorStop(0.4, '#0EA5E9');
+        canopyGrad.addColorStop(1, '#0369A1');
+        ctx.fillStyle = canopyGrad;
+        ctx.shadowColor = '#38BDF8';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.ellipse(0, -7, 4, 9, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Cockpit reflection
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.ellipse(-1.2, -10, 1.5, 3.5, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Wing cannon barrels
+        ctx.shadowColor = '#F97316';
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = '#1E1E2E';
+        ctx.strokeStyle = '#F97316';
+        ctx.lineWidth = 1;
+        ctx.fillRect(-15.5, 0, 3, 9); ctx.strokeRect(-15.5, 0, 3, 9);
+        ctx.fillRect(12.5, 0, 3, 9);  ctx.strokeRect(12.5, 0, 3, 9);
+
+        // Engine pods
+        ctx.fillStyle = '#1C1035';
+        ctx.strokeStyle = '#6D28D9';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.ellipse(-7, 11, 3.5, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(7, 11, 3.5, 4, 0, 0, Math.PI * 2);  ctx.fill(); ctx.stroke();
+
+        // Energy Shield
         if (p.shield) {
-          ctx.strokeStyle = '#06B6D4';
-          ctx.lineWidth = 2;
-          ctx.shadowColor = '#06B6D4';
-          ctx.shadowBlur = 14;
-          ctx.beginPath();
-          ctx.arc(0, 0, 26, 0, Math.PI * 2);
-          ctx.stroke();
+          const shieldAlpha = 0.5 + Math.sin(shipTime * 6) * 0.2;
+          ctx.globalAlpha = shieldAlpha;
+          ctx.strokeStyle = '#22D3EE';
+          ctx.lineWidth = 2.2;
+          ctx.shadowColor = '#22D3EE';
+          ctx.shadowBlur = 20;
+          ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = 'rgba(34,211,238,0.35)';
+          ctx.lineWidth = 6;
+          ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI * 2); ctx.stroke();
+          ctx.globalAlpha = 1;
         }
 
         ctx.restore();
+      }
+
+      // 7.5. PLAYER HP BAR — drawn on canvas bottom
+      if (gameState === 'playing') {
+        const phpRatio = Math.max(0, (p.hp ?? 100) / (p.maxHp ?? 100));
+        const phpW = Math.min(width - 80, 200);
+        const phpH = 7;
+        const phpX = (width - phpW) / 2;
+        const phpY = height - 18;
+
+        // Background
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(phpX - 2, phpY - 2, phpW + 4, phpH + 4);
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 0.8;
+        ctx.strokeRect(phpX - 2, phpY - 2, phpW + 4, phpH + 4);
+
+        // HP fill
+        const phpGrad = ctx.createLinearGradient(phpX, phpY, phpX + phpW, phpY);
+        if (phpRatio > 0.6) {
+          phpGrad.addColorStop(0, '#16A34A');
+          phpGrad.addColorStop(1, '#4ADE80');
+        } else if (phpRatio > 0.3) {
+          phpGrad.addColorStop(0, '#D97706');
+          phpGrad.addColorStop(1, '#FCD34D');
+        } else {
+          phpGrad.addColorStop(0, '#B91C1C');
+          phpGrad.addColorStop(1, '#F87171');
+        }
+        ctx.fillStyle = phpGrad;
+        ctx.fillRect(phpX, phpY, phpW * phpRatio, phpH);
+
+        // Label
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '7px monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('HP', phpX - 18, phpY + phpH / 2);
+        ctx.textAlign = 'right';
+        ctx.fillText(`${Math.ceil(p.hp ?? 100)}%`, phpX + phpW + 20, phpY + phpH / 2);
       }
 
       // 8. WARNING & VICTORY BANNERS
@@ -2899,16 +3538,32 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             </span>
           </div>
 
-          {/* Lives Remaining */}
-          <div className="flex items-center gap-1" title={`${lives} lives remaining`}>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <span
-                key={i}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                  i < lives ? 'bg-accent shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'bg-white/10'
-                }`}
+          {/* Player HP Bar */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-text/50 font-mono font-bold">HP</span>
+            <div className="w-20 h-2.5 rounded-full bg-white/10 p-0.5 overflow-hidden border border-white/15">
+              <div
+                className="h-full rounded-full transition-all duration-200"
+                style={{
+                  width: `${playerHp}%`,
+                  background:
+                    playerHp > 60
+                      ? 'linear-gradient(90deg, #16A34A, #4ADE80)'
+                      : playerHp > 30
+                        ? 'linear-gradient(90deg, #D97706, #FCD34D)'
+                        : 'linear-gradient(90deg, #B91C1C, #F87171)',
+                  boxShadow:
+                    playerHp > 60
+                      ? '0 0 8px rgba(74, 222, 128, 0.5)'
+                      : playerHp > 30
+                        ? '0 0 8px rgba(251, 191, 36, 0.5)'
+                        : '0 0 8px rgba(239, 68, 68, 0.5)',
+                }}
               />
-            ))}
+            </div>
+            <span className="text-[10px] font-mono font-bold text-white/80 min-w-[28px] text-right">
+              {playerHp}%
+            </span>
           </div>
         </div>
 
@@ -2929,7 +3584,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 pointer-events-none"
             aria-label="Active abilities"
           >
-            {Array.from({ length: 2 }).map((_, index) => {
+            {Array.from({ length: 3 }).map((_, index) => {
               const ability = activeAbilities[index];
               const info = ability ? ABILITY_INFO[ability] : null;
               return (
