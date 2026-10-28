@@ -201,12 +201,6 @@ const BOSS_THEMES = [
 
 const BOSS_SKILLS = [
   {
-    id: 'aimed',
-    name: 'Hunter Shot',
-    description: 'Fires one aimed bullet that disappears after a short time',
-    color: '#FB7185',
-  },
-  {
     id: 'fan',
     name: 'Nova Fan',
     description: 'Fires bullets in a wide fan spread',
@@ -1533,11 +1527,11 @@ const drawElementProjectile = (ctx, l, time) => {
   ctx.restore();
 };
 
-// Jarak pesawat di atas jari saat main pakai touch (px)
-const TOUCH_Y_OFFSET = 120;
+// Jarak pesawat di atas jari saat main pakai touch (px) agar tidak tertutup jari/tangan
+const TOUCH_Y_OFFSET = 160;
 
-// Posisi vertikal awal pesawat di layar touch (rasio dari tinggi canvas)
-const TOUCH_START_Y_RATIO = 0.7;
+// Posisi vertikal awal pesawat di layar touch (rasio dari tinggi canvas - lebih naik agar mudah dikontrol)
+const TOUCH_START_Y_RATIO = 0.58;
 
 const isCoarsePointer = () =>
   typeof window !== 'undefined' && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
@@ -1639,14 +1633,17 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     setSoundOn(!soundOn);
   };
 
-  // Resize canvas according to display width
+  // Resize canvas according to display width & height
   const updateCanvasDimensions = useCallback(() => {
     if (!containerRef.current || !canvasRef.current) return;
     const contWidth = containerRef.current.clientWidth || 360;
+    const contHeight = containerRef.current.clientHeight || (typeof window !== 'undefined' ? window.innerHeight : 600);
+
     // Keep responsive ratio on mobile, cap max width to 420px
     const targetW = Math.max(300, Math.min(contWidth, 420));
-    // Fill the available game viewport while leaving the header/HUD visible.
-    const targetH = Math.max(320, Math.min(window.innerHeight - 150, targetW * 1.9));
+    // Header (~52px) + HUD (~40px) = ~92px. Menggunakan tinggi container langsung agar tidak stretch
+    const availableH = Math.max(320, contHeight - 96);
+    const targetH = Math.min(availableH, Math.round(targetW * 1.75));
 
     const canvas = canvasRef.current;
     canvas.width = targetW;
@@ -1840,8 +1837,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       gameRef.current.player.x = relativeX;
     }
     // Clamp (bukan skip) supaya pesawat tetap mengikuti jari walau offset besar
-    const minY = gameRef.current.height * 0.35;
-    const maxY = gameRef.current.height - 48;
+    const minY = gameRef.current.height * 0.25;
+    const maxY = gameRef.current.height - (isTouch ? 80 : 48);
     gameRef.current.player.y = Math.max(minY, Math.min(maxY, targetY));
   };
 
@@ -2589,18 +2586,6 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           const aimAngle = Math.atan2(p.y - originY, p.x - b.x);
 
           switch (skill.id) {
-            case 'aimed': {
-              // Hunter Shot — single aimed shot, moderate speed, limited lifetime
-              const hunterAngle = aimAngle + (Math.random() - 0.5) * 0.28;
-              const hunterSpeed = 2.8 + g.wave * 0.1;
-              makeBossShot(hunterAngle, hunterSpeed, 5.5);
-              const hunterShot = g.bossProjectiles[g.bossProjectiles.length - 1];
-              if (hunterShot) {
-                hunterShot.homing = false;
-                hunterShot.lifetime = 1.8;
-              }
-              break;
-            }
             case 'fan':
               // Fan — 5 shots spread, moderate speed
               for (let n = -2; n <= 2; n++)
@@ -3469,7 +3454,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       <div
         ref={containerRef}
         onClick={e => e.stopPropagation()}
-        className="relative w-full max-w-[440px] h-screen max-h-screen bg-[#070417]/95 border-x border-purple-500/30 shadow-[0_0_60px_rgba(139,92,246,0.3)] overflow-hidden flex flex-col items-center"
+        className="relative w-full max-w-[440px] h-[100dvh] max-h-[100dvh] bg-[#070417]/95 border-x border-purple-500/30 shadow-[0_0_60px_rgba(139,92,246,0.3)] overflow-hidden flex flex-col items-center pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
       >
         {/* Top Header Bar */}
         <div className="w-full px-4 py-3 border-b border-white/[0.08] flex items-center justify-between bg-white/[0.02]">
@@ -3537,39 +3522,11 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
               {WEAPONS[weapon]?.badge || 'DEFAULT'}
             </span>
           </div>
-
-          {/* Player HP Bar */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-text/50 font-mono font-bold">HP</span>
-            <div className="w-20 h-2.5 rounded-full bg-white/10 p-0.5 overflow-hidden border border-white/15">
-              <div
-                className="h-full rounded-full transition-all duration-200"
-                style={{
-                  width: `${playerHp}%`,
-                  background:
-                    playerHp > 60
-                      ? 'linear-gradient(90deg, #16A34A, #4ADE80)'
-                      : playerHp > 30
-                        ? 'linear-gradient(90deg, #D97706, #FCD34D)'
-                        : 'linear-gradient(90deg, #B91C1C, #F87171)',
-                  boxShadow:
-                    playerHp > 60
-                      ? '0 0 8px rgba(74, 222, 128, 0.5)'
-                      : playerHp > 30
-                        ? '0 0 8px rgba(251, 191, 36, 0.5)'
-                        : '0 0 8px rgba(239, 68, 68, 0.5)',
-                }}
-              />
-            </div>
-            <span className="text-[10px] font-mono font-bold text-white/80 min-w-[28px] text-right">
-              {playerHp}%
-            </span>
-          </div>
         </div>
 
         {/* Game Canvas Container */}
         <div
-          className="relative w-full flex-1 min-h-0 flex justify-center bg-[#02000c] touch-none select-none overflow-hidden"
+          className="relative w-full flex-1 min-h-0 flex items-center justify-center bg-[#02000c] touch-none select-none overflow-hidden"
           onPointerMove={handlePointerMove}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
@@ -3577,11 +3534,11 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           onTouchStart={handlePointerDown}
           onTouchEnd={handlePointerUp}
         >
-          <canvas ref={canvasRef} className="block cursor-crosshair max-w-full h-full" />
+          <canvas ref={canvasRef} className="block cursor-crosshair max-w-full" />
 
           {/* Compact ability badges live inside the game screen */}
           <div
-            className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 pointer-events-none"
+            className="absolute bottom-4 left-3 z-10 flex items-center gap-1.5 pointer-events-none"
             aria-label="Active abilities"
           >
             {Array.from({ length: 3 }).map((_, index) => {
@@ -3619,7 +3576,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
 
           {/* Active elemental badges, mirrored from the ability badge style */}
           <div
-            className="absolute bottom-3 right-3 z-10 flex items-center justify-end gap-1.5 pointer-events-none"
+            className="absolute bottom-4 right-3 z-10 flex items-center justify-end gap-1.5 pointer-events-none"
             aria-label="Active elements"
           >
             {(() => {
