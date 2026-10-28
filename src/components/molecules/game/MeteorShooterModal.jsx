@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
-import { FaBolt, FaPlay, FaRedo, FaTrophy, FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
+import { FaPlay, FaRedo, FaTrophy, FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { IoClose, IoRocketOutline } from 'react-icons/io5';
 
 // Synthesized Sound Effects via Web Audio API (Zero external assets needed)
@@ -203,7 +203,7 @@ const BOSS_SKILLS = [
   {
     id: 'aimed',
     name: 'Hunter Shot',
-    description: 'Fires a bullet aimed at the player position',
+    description: 'Fires one aimed bullet that disappears after a short time',
     color: '#FB7185',
   },
   {
@@ -462,15 +462,330 @@ const WEAPONS = {
     desc: 'Homing missiles with limited lightning chains and slow firing',
     elements: ['rocket', 'lightning'],
   },
+  fire_ice: {
+    id: 'fire_ice',
+    name: 'Thermal Shatter',
+    icon: '🔥❄️',
+    color: '#F472B6',
+    badge: 'STEAM SHOCK',
+    desc: 'Thermal shock causing explosive steam and freeze vulnerability',
+    elements: ['fire', 'ice'],
+  },
+  fire_rocket: {
+    id: 'fire_rocket',
+    name: 'Hellfire Warhead',
+    icon: '🚀🔥',
+    color: '#EA580C',
+    badge: 'BLAST MISSILE',
+    desc: 'High-yield explosive missiles with expansive fireball radius',
+    elements: ['fire', 'rocket'],
+  },
+  fire_wind: {
+    id: 'fire_wind',
+    name: 'Firestorm Lance',
+    icon: '🔥🌪️',
+    color: '#F97316',
+    badge: 'FIRE VORTEX',
+    desc: 'High-speed piercing flame vortices cutting through enemies',
+    elements: ['fire', 'wind'],
+  },
+  earth_fire: {
+    id: 'earth_fire',
+    name: 'Magma Eruption',
+    icon: '🌋',
+    color: '#C2410C',
+    badge: 'MOLTEN IMPACT',
+    desc: 'Molten rock bursts that crush armor and leave burning magma',
+    elements: ['earth', 'fire'],
+  },
+  fire_light: {
+    id: 'fire_light',
+    name: 'Solar Supernova',
+    icon: '☀️🔥',
+    color: '#FBBF24',
+    badge: 'SOLAR FLARE',
+    desc: 'Blinding radiant rays with incinerating splash explosions',
+    elements: ['fire', 'light'],
+  },
+  fire_shadow: {
+    id: 'fire_shadow',
+    name: 'Abyssal Hellfire',
+    icon: '🌑🔥',
+    color: '#9333EA',
+    badge: 'NETHER FLAME',
+    desc: 'Devastating dark flames consuming enemies with void blast',
+    elements: ['fire', 'shadow'],
+  },
+  ice_rocket: {
+    id: 'ice_rocket',
+    name: 'Cryo Torpedo',
+    icon: '🚀❄️',
+    color: '#38BDF8',
+    badge: 'FROST MISSILE',
+    desc: 'Homing glacial torpedoes that detonate with freezing shrapnel',
+    elements: ['ice', 'rocket'],
+  },
+  ice_poison: {
+    id: 'ice_poison',
+    name: 'Cryo Venom',
+    icon: '❄️☠️',
+    color: '#2DD4BF',
+    badge: 'FROST TOXIN',
+    desc: 'Deep freezing venom that severely slows and corrodes targets',
+    elements: ['ice', 'poison'],
+  },
+  earth_ice: {
+    id: 'earth_ice',
+    name: 'Glacial Permafrost',
+    icon: '🪨❄️',
+    color: '#7DD3FC',
+    badge: 'FROST SHARDS',
+    desc: 'Heavy crystalline frost chunks with massive impact and slow',
+    elements: ['earth', 'ice'],
+  },
+  ice_light: {
+    id: 'ice_light',
+    name: 'Aurora Prism',
+    icon: '🌈',
+    color: '#BAE6FD',
+    badge: 'AURORA BEAM',
+    desc: 'Prismatic radiant rays freezing enemies along laser beam paths',
+    elements: ['ice', 'light'],
+  },
+  ice_shadow: {
+    id: 'ice_shadow',
+    name: 'Black Ice',
+    icon: '🌑❄️',
+    color: '#818CF8',
+    badge: 'VOID FROST',
+    desc: 'Frigid void chill that freezes targets and shatters defenses',
+    elements: ['ice', 'shadow'],
+  },
+  lightning_poison: {
+    id: 'lightning_poison',
+    name: 'Neurotoxin Arc',
+    icon: '⚡☠️',
+    color: '#84CC16',
+    badge: 'BIO SHOCK',
+    desc: 'Electrified neurotoxin that chains lethal poison between targets',
+    elements: ['lightning', 'poison'],
+  },
+  lightning_wind: {
+    id: 'lightning_wind',
+    name: 'Thunder Tempest',
+    icon: '⚡🌪️',
+    color: '#38BDF8',
+    badge: 'TEMPEST',
+    desc: 'High-velocity thunderous gusts arcing lightning across lanes',
+    elements: ['lightning', 'wind'],
+  },
+  earth_lightning: {
+    id: 'earth_lightning',
+    name: 'Tectonic Surge',
+    icon: '🪨⚡',
+    color: '#EAB308',
+    badge: 'SEISMIC ARC',
+    desc: 'Heavy charged minerals triggering seismic electrical bursts',
+    elements: ['earth', 'lightning'],
+  },
+  light_lightning: {
+    id: 'light_lightning',
+    name: 'Divine Thunderbolt',
+    icon: '☀️⚡',
+    color: '#FEF08A',
+    badge: 'HOLY THUNDER',
+    desc: 'Ultra-fast radiant lightning arcs striking targets instantly',
+    elements: ['light', 'lightning'],
+  },
+  lightning_shadow: {
+    id: 'lightning_shadow',
+    name: 'Void Spark',
+    icon: '🌑⚡',
+    color: '#A855F7',
+    badge: 'DARK VOLT',
+    desc: 'High-damage shadow bolts chaining destructive void surges',
+    elements: ['lightning', 'shadow'],
+  },
+  poison_rocket: {
+    id: 'poison_rocket',
+    name: 'Bio-Hazard Warhead',
+    icon: '🚀☠️',
+    color: '#4ADE80',
+    badge: 'TOXIC MISSILE',
+    desc: 'Homing warheads erupting into corrosive acid gas clouds',
+    elements: ['poison', 'rocket'],
+  },
+  rocket_wind: {
+    id: 'rocket_wind',
+    name: 'Turboflyer Missile',
+    icon: '🚀🌪️',
+    color: '#22D3EE',
+    badge: 'AERO MISSILE',
+    desc: 'Supersonic missiles piercing through targets with vortex thrust',
+    elements: ['rocket', 'wind'],
+  },
+  earth_rocket: {
+    id: 'earth_rocket',
+    name: 'Bunker Buster',
+    icon: '🚀🪨',
+    color: '#D97706',
+    badge: 'HEAVY IMPACT',
+    desc: 'Devastating armor-piercing kinetic rockets with massive knockback',
+    elements: ['earth', 'rocket'],
+  },
+  light_rocket: {
+    id: 'light_rocket',
+    name: 'Photon Missile',
+    icon: '🚀☀️',
+    color: '#FDE047',
+    badge: 'PHOTON HOMING',
+    desc: 'High-speed light-propelled missiles with radiant splash blasts',
+    elements: ['light', 'rocket'],
+  },
+  rocket_shadow: {
+    id: 'rocket_shadow',
+    name: 'Dreadnought Core',
+    icon: '🚀🌑',
+    color: '#7C3AED',
+    badge: 'VOID TORPEDO',
+    desc: 'Heavy homing void cores causing gravitational implode damage',
+    elements: ['rocket', 'shadow'],
+  },
+  poison_wind: {
+    id: 'poison_wind',
+    name: 'Miasma Cyclone',
+    icon: '☠️🌪️',
+    color: '#10B981',
+    badge: 'VENOM GALE',
+    desc: 'Toxic vortex dispersing piercing corrosive spores everywhere',
+    elements: ['poison', 'wind'],
+  },
+  earth_poison: {
+    id: 'earth_poison',
+    name: 'Venom Geode',
+    icon: '🪨☠️',
+    color: '#65A30D',
+    badge: 'ACID SHARD',
+    desc: 'Dense toxic minerals fracturing into corrosive acid shrapnel',
+    elements: ['earth', 'poison'],
+  },
+  light_poison: {
+    id: 'light_poison',
+    name: 'Purifying Rot',
+    icon: '☀️☠️',
+    color: '#A3E635',
+    badge: 'RADIANT TOXIN',
+    desc: 'Luminous virulent rays that rapidly infect and burn foes',
+    elements: ['light', 'poison'],
+  },
+  poison_shadow: {
+    id: 'poison_shadow',
+    name: 'Corrupting Plague',
+    icon: '🌑☠️',
+    color: '#4C1D95',
+    badge: 'VOID DECAY',
+    desc: 'Withering shadow plague draining hit points with high DoT',
+    elements: ['poison', 'shadow'],
+  },
+  earth_wind: {
+    id: 'earth_wind',
+    name: 'Sandstorm Scythe',
+    icon: '🪨🌪️',
+    color: '#D97706',
+    badge: 'DUST SCYTHE',
+    desc: 'Abrasive piercing dust storms grinding down meteor hulls',
+    elements: ['earth', 'wind'],
+  },
+  light_wind: {
+    id: 'light_wind',
+    name: 'Zephyr Ray',
+    icon: '☀️🌪️',
+    color: '#BAE6FD',
+    badge: 'SOLAR BREEZE',
+    desc: 'Swift solar winds with high firing rate and piercing radiance',
+    elements: ['light', 'wind'],
+  },
+  shadow_wind: {
+    id: 'shadow_wind',
+    name: 'Nether Gale',
+    icon: '🌑🌪️',
+    color: '#6366F1',
+    badge: 'VOID SLASH',
+    desc: 'Crescent void blades cutting swift swathes through enemy waves',
+    elements: ['shadow', 'wind'],
+  },
+  earth_light: {
+    id: 'earth_light',
+    name: 'Crystal Prism',
+    icon: '🪨☀️',
+    color: '#FDE68A',
+    badge: 'PRISM SHARD',
+    desc: 'Reflective crystal spikes delivering heavy radiant impact',
+    elements: ['earth', 'light'],
+  },
+  earth_shadow: {
+    id: 'earth_shadow',
+    name: 'Obsidian Oblivion',
+    icon: '🪨🌑',
+    color: '#475569',
+    badge: 'DARK METEOR',
+    desc: 'Ultra-dense dark matter chunks that crush enemy armor',
+    elements: ['earth', 'shadow'],
+  },
 };
 
 const ELEMENT_COMBOS = {
-  'ice+lightning': 'ice_lightning',
+  // Fire combinations
+  'fire+ice': 'fire_ice',
   'fire+lightning': 'fire_lightning',
-  'ice+wind': 'ice_wind',
+  'fire+rocket': 'fire_rocket',
   'fire+poison': 'poison_fire',
-  'light+shadow': 'shadow_light',
+  'fire+wind': 'fire_wind',
+  'earth+fire': 'earth_fire',
+  'fire+light': 'fire_light',
+  'fire+shadow': 'fire_shadow',
+
+  // Ice combinations
+  'ice+lightning': 'ice_lightning',
+  'ice+rocket': 'ice_rocket',
+  'ice+poison': 'ice_poison',
+  'ice+wind': 'ice_wind',
+  'earth+ice': 'earth_ice',
+  'ice+light': 'ice_light',
+  'ice+shadow': 'ice_shadow',
+
+  // Lightning combinations
   'lightning+rocket': 'rocket_lightning',
+  'lightning+poison': 'lightning_poison',
+  'lightning+wind': 'lightning_wind',
+  'earth+lightning': 'earth_lightning',
+  'light+lightning': 'light_lightning',
+  'lightning+shadow': 'lightning_shadow',
+
+  // Rocket combinations
+  'poison+rocket': 'poison_rocket',
+  'rocket+wind': 'rocket_wind',
+  'earth+rocket': 'earth_rocket',
+  'light+rocket': 'light_rocket',
+  'rocket+shadow': 'rocket_shadow',
+
+  // Poison combinations
+  'poison+wind': 'poison_wind',
+  'earth+poison': 'earth_poison',
+  'light+poison': 'light_poison',
+  'poison+shadow': 'poison_shadow',
+
+  // Wind combinations
+  'earth+wind': 'earth_wind',
+  'light+wind': 'light_wind',
+  'shadow+wind': 'shadow_wind',
+
+  // Earth combinations
+  'earth+light': 'earth_light',
+  'earth+shadow': 'earth_shadow',
+
+  // Light + Shadow
+  'light+shadow': 'shadow_light',
 };
 
 const ELEMENT_SKILLS = [
@@ -488,32 +803,352 @@ const ELEMENT_SKILLS = [
 // Balance values: damage is relative to the default laser (1 damage).
 // Longer intervals and lower damage keep strong fusion effects from becoming overpowered.
 const WEAPON_BALANCE = {
+  // Original fusions
   ice_lightning: { interval: 230, damage: 0.75, chainLimit: 2 },
   fire_lightning: { interval: 270, damage: 1.5, projectileSpeed: 9 },
   ice_wind: { interval: 240, damage: 0.55, projectileSpeed: 10, pierce: true },
   poison_fire: { interval: 210, damage: 0.4, poisonDuration: 3, poisonDamage: 0.5 },
   shadow_light: { interval: 250, damage: 1.2, pierce: true },
   rocket_lightning: { interval: 290, damage: 1, chainLimit: 2, projectileSpeed: 10 },
+
+  // Fire fusions
+  fire_ice: { interval: 220, damage: 1.1, projectileSpeed: 10 },
+  fire_rocket: { interval: 280, damage: 1.8, projectileSpeed: 10 },
+  fire_wind: { interval: 200, damage: 0.9, projectileSpeed: 11, pierce: true },
+  earth_fire: { interval: 240, damage: 1.4 },
+  fire_light: { interval: 190, damage: 1.2, projectileSpeed: 12 },
+  fire_shadow: { interval: 230, damage: 1.4 },
+
+  // Ice fusions
+  ice_rocket: { interval: 270, damage: 1.3, projectileSpeed: 10 },
+  ice_poison: { interval: 210, damage: 0.6, poisonDuration: 3, poisonDamage: 0.6 },
+  earth_ice: { interval: 250, damage: 1.3 },
+  ice_light: { interval: 200, damage: 0.9, projectileSpeed: 12, pierce: true },
+  ice_shadow: { interval: 220, damage: 1.1 },
+
+  // Lightning fusions
+  lightning_poison: {
+    interval: 200,
+    damage: 0.7,
+    chainLimit: 2,
+    poisonDuration: 2.5,
+    poisonDamage: 0.5,
+  },
+  lightning_wind: { interval: 180, damage: 0.8, projectileSpeed: 11, chainLimit: 2 },
+  earth_lightning: { interval: 230, damage: 1.3, chainLimit: 2 },
+  light_lightning: { interval: 170, damage: 1.0, projectileSpeed: 13, chainLimit: 3 },
+  lightning_shadow: { interval: 210, damage: 1.2, chainLimit: 2 },
+
+  // Rocket fusions
+  poison_rocket: { interval: 280, damage: 1.2, poisonDuration: 3, poisonDamage: 0.6 },
+  rocket_wind: { interval: 260, damage: 1.1, projectileSpeed: 11, pierce: true },
+  earth_rocket: { interval: 300, damage: 1.9, projectileSpeed: 9 },
+  light_rocket: { interval: 240, damage: 1.3, projectileSpeed: 11 },
+  rocket_shadow: { interval: 280, damage: 1.6, projectileSpeed: 10 },
+
+  // Poison fusions
+  poison_wind: {
+    interval: 190,
+    damage: 0.6,
+    projectileSpeed: 10,
+    pierce: true,
+    poisonDuration: 2.5,
+    poisonDamage: 0.5,
+  },
+  earth_poison: { interval: 220, damage: 1.1, poisonDuration: 3, poisonDamage: 0.6 },
+  light_poison: {
+    interval: 190,
+    damage: 0.8,
+    projectileSpeed: 11,
+    poisonDuration: 2.5,
+    poisonDamage: 0.5,
+  },
+  poison_shadow: { interval: 210, damage: 0.9, poisonDuration: 3.5, poisonDamage: 0.7 },
+
+  // Wind fusions
+  earth_wind: { interval: 210, damage: 0.9, projectileSpeed: 10, pierce: true },
+  light_wind: { interval: 170, damage: 0.8, projectileSpeed: 12, pierce: true },
+  shadow_wind: { interval: 190, damage: 1.0, projectileSpeed: 11, pierce: true },
+
+  // Earth fusions
+  earth_light: { interval: 200, damage: 1.3, projectileSpeed: 11 },
+  earth_shadow: { interval: 240, damage: 1.5 },
 };
 
 const CHEAT_COMBOS = [
-  { keys: ['KeyT', 'KeyF'], weapon: 'poison_fire', label: 'T + F', name: 'Toxic Blaze' },
-  { keys: ['KeyI', 'KeyL'], weapon: 'ice_lightning', label: 'I + L', name: 'Permafrost Storm' },
-  { keys: ['KeyF', 'KeyL'], weapon: 'fire_lightning', label: 'F + L', name: 'Plasma Inferno' },
-  { keys: ['KeyI', 'KeyW'], weapon: 'ice_wind', label: 'I + W', name: 'Absolute Zero' },
-  { keys: ['KeyH', 'KeyL'], weapon: 'shadow_light', label: 'H + L', name: 'Eclipse Beam' },
-  { keys: ['KeyR', 'KeyL'], weapon: 'rocket_lightning', label: 'R + L', name: 'Storm Seeker' },
+  {
+    keys: ['KeyT', 'KeyF'],
+    weapon: 'poison_fire',
+    label: 'T + F',
+    name: 'Toxic Blaze (Poison+Fire)',
+  },
+  {
+    keys: ['KeyI', 'KeyL'],
+    weapon: 'ice_lightning',
+    label: 'I + L',
+    name: 'Permafrost Storm (Ice+Volt)',
+  },
+  {
+    keys: ['KeyF', 'KeyL'],
+    weapon: 'fire_lightning',
+    label: 'F + L',
+    name: 'Plasma Inferno (Fire+Volt)',
+  },
+  { keys: ['KeyI', 'KeyW'], weapon: 'ice_wind', label: 'I + W', name: 'Absolute Zero (Ice+Wind)' },
+  {
+    keys: ['KeyH', 'KeyL'],
+    weapon: 'shadow_light',
+    label: 'H + L',
+    name: 'Eclipse Beam (Shadow+Light)',
+  },
+  {
+    keys: ['KeyR', 'KeyL'],
+    weapon: 'rocket_lightning',
+    label: 'R + L',
+    name: 'Storm Seeker (Rocket+Volt)',
+  },
+  {
+    keys: ['KeyF', 'KeyI'],
+    weapon: 'fire_ice',
+    label: 'F + I',
+    name: 'Thermal Shatter (Fire+Ice)',
+  },
+  {
+    keys: ['KeyF', 'KeyR'],
+    weapon: 'fire_rocket',
+    label: 'F + R',
+    name: 'Hellfire Warhead (Fire+Rocket)',
+  },
+  {
+    keys: ['KeyF', 'KeyW'],
+    weapon: 'fire_wind',
+    label: 'F + W',
+    name: 'Firestorm Lance (Fire+Wind)',
+  },
+  {
+    keys: ['KeyE', 'KeyF'],
+    weapon: 'earth_fire',
+    label: 'E + F',
+    name: 'Magma Eruption (Earth+Fire)',
+  },
+  {
+    keys: ['KeyS', 'KeyF'],
+    weapon: 'fire_light',
+    label: 'S + F',
+    name: 'Solar Supernova (Fire+Light)',
+  },
+  {
+    keys: ['KeyA', 'KeyF'],
+    weapon: 'fire_shadow',
+    label: 'A + F',
+    name: 'Abyssal Hellfire (Fire+Shadow)',
+  },
+  {
+    keys: ['KeyI', 'KeyR'],
+    weapon: 'ice_rocket',
+    label: 'I + R',
+    name: 'Cryo Torpedo (Ice+Rocket)',
+  },
+  { keys: ['KeyI', 'KeyP'], weapon: 'ice_poison', label: 'I + P', name: 'Cryo Venom (Ice+Poison)' },
+  {
+    keys: ['KeyE', 'KeyI'],
+    weapon: 'earth_ice',
+    label: 'E + I',
+    name: 'Glacial Permafrost (Earth+Ice)',
+  },
+  { keys: ['KeyS', 'KeyI'], weapon: 'ice_light', label: 'S + I', name: 'Aurora Prism (Ice+Light)' },
+  { keys: ['KeyA', 'KeyI'], weapon: 'ice_shadow', label: 'A + I', name: 'Black Ice (Ice+Shadow)' },
+  {
+    keys: ['KeyL', 'KeyP'],
+    weapon: 'lightning_poison',
+    label: 'L + P',
+    name: 'Neurotoxin Arc (Volt+Poison)',
+  },
+  {
+    keys: ['KeyL', 'KeyW'],
+    weapon: 'lightning_wind',
+    label: 'L + W',
+    name: 'Thunder Tempest (Volt+Wind)',
+  },
+  {
+    keys: ['KeyE', 'KeyL'],
+    weapon: 'earth_lightning',
+    label: 'E + L',
+    name: 'Tectonic Surge (Earth+Volt)',
+  },
+  {
+    keys: ['KeyS', 'KeyL'],
+    weapon: 'light_lightning',
+    label: 'S + L',
+    name: 'Divine Thunder (Light+Volt)',
+  },
+  {
+    keys: ['KeyA', 'KeyL'],
+    weapon: 'lightning_shadow',
+    label: 'A + L',
+    name: 'Void Spark (Volt+Shadow)',
+  },
+  {
+    keys: ['KeyR', 'KeyP'],
+    weapon: 'poison_rocket',
+    label: 'R + P',
+    name: 'Bio-Hazard Warhead (Rocket+Poison)',
+  },
+  {
+    keys: ['KeyR', 'KeyW'],
+    weapon: 'rocket_wind',
+    label: 'R + W',
+    name: 'Turboflyer Missile (Rocket+Wind)',
+  },
+  {
+    keys: ['KeyE', 'KeyR'],
+    weapon: 'earth_rocket',
+    label: 'E + R',
+    name: 'Bunker Buster (Earth+Rocket)',
+  },
+  {
+    keys: ['KeyS', 'KeyR'],
+    weapon: 'light_rocket',
+    label: 'S + R',
+    name: 'Photon Missile (Light+Rocket)',
+  },
+  {
+    keys: ['KeyA', 'KeyR'],
+    weapon: 'rocket_shadow',
+    label: 'A + R',
+    name: 'Dreadnought Core (Rocket+Shadow)',
+  },
+  {
+    keys: ['KeyP', 'KeyW'],
+    weapon: 'poison_wind',
+    label: 'P + W',
+    name: 'Miasma Cyclone (Poison+Wind)',
+  },
+  {
+    keys: ['KeyE', 'KeyP'],
+    weapon: 'earth_poison',
+    label: 'E + P',
+    name: 'Venom Geode (Earth+Poison)',
+  },
+  {
+    keys: ['KeyS', 'KeyP'],
+    weapon: 'light_poison',
+    label: 'S + P',
+    name: 'Purifying Rot (Light+Poison)',
+  },
+  {
+    keys: ['KeyA', 'KeyP'],
+    weapon: 'poison_shadow',
+    label: 'A + P',
+    name: 'Corrupting Plague (Poison+Shadow)',
+  },
+  {
+    keys: ['KeyE', 'KeyW'],
+    weapon: 'earth_wind',
+    label: 'E + W',
+    name: 'Sandstorm Scythe (Earth+Wind)',
+  },
+  { keys: ['KeyS', 'KeyW'], weapon: 'light_wind', label: 'S + W', name: 'Zephyr Ray (Light+Wind)' },
+  {
+    keys: ['KeyA', 'KeyW'],
+    weapon: 'shadow_wind',
+    label: 'A + W',
+    name: 'Nether Gale (Shadow+Wind)',
+  },
+  {
+    keys: ['KeyE', 'KeyS'],
+    weapon: 'earth_light',
+    label: 'E + S',
+    name: 'Crystal Prism (Earth+Light)',
+  },
+  {
+    keys: ['KeyE', 'KeyA'],
+    weapon: 'earth_shadow',
+    label: 'E + A',
+    name: 'Obsidian Oblivion (Earth+Shadow)',
+  },
 ];
 
 const getWeaponElements = weaponId => WEAPONS[weaponId]?.elements || [];
+
+// Calculate weapon progression and awaken stacking
+const processWeaponStack = (player, pickedId) => {
+  const currentWeapon = player.weapon || 'default';
+  const currentElements = getWeaponElements(currentWeapon);
+  const pickedElements = getWeaponElements(pickedId);
+
+  // If currently default, directly switch to picked skill
+  if (!currentElements.length) {
+    return {
+      newWeapon: pickedId,
+      stackLevel: 1,
+      awakenElement: null,
+      type: 'equip',
+    };
+  }
+
+  // If already a fusion weapon (2 elements)
+  if (currentElements.length === 2) {
+    const [el1, el2] = currentElements;
+    // If the picked drop matches one of the two fusion elements -> AWAKEN STACK!
+    if (pickedId === el1 || pickedId === el2) {
+      const currentStack = player.stackLevel || 1;
+      const nextStack = Math.min(3, currentStack + 1);
+      return {
+        newWeapon: currentWeapon,
+        stackLevel: nextStack,
+        awakenElement: pickedId,
+        type: 'awaken',
+      };
+    }
+    // If picked drop is a completely different element -> switch to picked element
+    return {
+      newWeapon: pickedId,
+      stackLevel: 1,
+      awakenElement: null,
+      type: 'switch',
+    };
+  }
+
+  // If currently a single element
+  if (currentElements.length === 1) {
+    const singleEl = currentElements[0];
+    if (singleEl === pickedId) {
+      // Picked identical element again
+      return {
+        newWeapon: currentWeapon,
+        stackLevel: Math.min(3, (player.stackLevel || 1) + 1),
+        awakenElement: singleEl,
+        type: 'stack_single',
+      };
+    }
+    // Form new fusion weapon
+    const comboKey = [singleEl, pickedId].sort().join('+');
+    const fusionId = ELEMENT_COMBOS[comboKey] || pickedId;
+    return {
+      newWeapon: fusionId,
+      stackLevel: 1,
+      awakenElement: null,
+      type: fusionId !== pickedId ? 'fusion' : 'switch',
+    };
+  }
+
+  return {
+    newWeapon: pickedId,
+    stackLevel: 1,
+    awakenElement: null,
+    type: 'equip',
+  };
+};
+
 const combineWeapons = (currentId, pickedId) => {
   const current = getWeaponElements(currentId);
   const picked = getWeaponElements(pickedId);
   if (!current.length) return pickedId;
-  if (!picked.length) return 'default';
+  if (!picked.length) return pickedId || 'default';
   if (current.length === 1 && picked.length === 1 && current[0] === picked[0]) return currentId;
   const key = [...new Set([...current, ...picked])].sort().join('+');
-  return ELEMENT_COMBOS[key] || 'default';
+  return ELEMENT_COMBOS[key] || pickedId;
 };
 
 export default function MeteorShooterModal({ isOpen, onClose }) {
@@ -528,8 +1163,35 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
   const [lives, setLives] = useState(3);
   const [wave, setWave] = useState(1);
   const [soundOn, setSoundOn] = useState(true);
-  const [tripleShotTimer, setTripleShotTimer] = useState(0);
   const [weapon, setWeapon] = useState('default');
+  const [activeAbilities, setActiveAbilities] = useState([]);
+
+  const ABILITY_INFO = {
+    triple: { name: 'Triple Shot', icon: '3X', color: '#F59E0B' },
+    ricochet: { name: 'Ricochet', icon: '↗', color: '#34D399' },
+    piercing: { name: 'Piercing', icon: '➤', color: '#A78BFA' },
+  };
+
+  const grantAbility = ability => {
+    const g = gameRef.current;
+    const current = [...(g.player.abilities || [])];
+    if (current.includes(ability)) {
+      // Picking the same ability again refreshes it without consuming a slot.
+      setActiveAbilities(current);
+      return;
+    }
+    // Keep only two abilities; the oldest one is replaced by the new pickup.
+    const next = [...current, ability].slice(-2);
+    g.player.abilities = next;
+    setActiveAbilities(next);
+    g.bossVictory = {
+      text:
+        current.length >= 2
+          ? `🔄 ${ABILITY_INFO[ability].name.toUpperCase()} REPLACED OLDEST ABILITY!`
+          : `✨ ${ABILITY_INFO[ability].name.toUpperCase()} UNLOCKED!`,
+      timer: 2.5,
+    };
+  };
 
   // References for mutable game loop state to avoid React re-render lag
   const gameRef = useRef({
@@ -542,6 +1204,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       tilt: 0,
       shield: false,
       tripleShotTime: 0,
+      abilities: [],
       lastShotTime: 0,
       weapon: 'default',
     },
@@ -587,7 +1250,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     const contWidth = containerRef.current.clientWidth || 360;
     // Keep responsive ratio on mobile, cap max width to 420px
     const targetW = Math.max(300, Math.min(contWidth, 420));
-    const targetH = Math.max(420, Math.min(window.innerHeight * 0.68, targetW * 1.35));
+    // Fill the available game viewport while leaving the header/HUD visible.
+    const targetH = Math.max(320, Math.min(window.innerHeight - 150, targetW * 1.9));
 
     const canvas = canvasRef.current;
     canvas.width = targetW;
@@ -675,6 +1339,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     g.player.shield = false;
     g.player.bossSlowTimer = 0;
     g.player.tripleShotTime = 0;
+    g.player.abilities = [];
     g.player.lastShotTime = 0;
     g.player.weapon = 'default';
     g.keys.shoot = false;
@@ -684,7 +1349,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     setScore(0);
     setLives(3);
     setWave(1);
-    setTripleShotTimer(0);
+    setActiveAbilities([]);
     setWeapon('default');
     setGameState('playing');
   };
@@ -860,11 +1525,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         const targetTilt = g.keys.left ? -0.3 : g.keys.right ? 0.3 : 0;
         p.tilt += (targetTilt - p.tilt) * 0.2;
 
-        // Triple shot cooldown count
-        if (p.tripleShotTime > 0) {
-          p.tripleShotTime -= delta;
-          setTripleShotTimer(Math.ceil(p.tripleShotTime));
-        }
+        // Abilities persist for the whole run until replaced by a new pickup.
+        const playerAbilities = p.abilities || [];
 
         // Automatic / Pressed Shooting with Permanent Elemental Weapon
         const currentWep = p.weapon || 'default';
@@ -893,13 +1555,17 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   ? 4.5
                   : 3.5,
             damage: (currentWep === 'rocket' ? 2 : 1) * (weaponBalance.damage ?? 1),
-            pierce: Boolean(weaponBalance.pierce),
+            pierce:
+              Boolean(weaponBalance.pierce) ||
+              playerAbilities.includes('piercing') ||
+              playerAbilities.includes('ricochet'),
+            ricochet: playerAbilities.includes('ricochet'),
             hitTargets: [],
             hitBoss: false,
             life: 0,
           });
 
-          if (p.tripleShotTime > 0) {
+          if (playerAbilities.includes('triple')) {
             // Triple spread with active elemental weapon!
             g.lasers.push(
               makeShot(p.x, p.y - 18, 0, -12),
@@ -1077,11 +1743,12 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
 
         // Custom visuals for each elemental weapon
         ctx.save();
-        if (l.type === 'rocket' || (l.elements || []).includes('rocket')) {
+        const laserElements = l.elements || getWeaponElements(l.type);
+        if (laserElements.includes('rocket')) {
           ctx.translate(l.x, l.y);
           ctx.rotate(Math.atan2(l.vy, l.vx) + Math.PI / 2);
-          ctx.fillStyle = '#F59E0B';
-          ctx.shadowColor = '#F97316';
+          ctx.fillStyle = l.color || '#F59E0B';
+          ctx.shadowColor = l.color || '#F97316';
           ctx.shadowBlur = 10;
           ctx.fillRect(-2.5, -6, 5, 12);
           ctx.fillStyle = '#EF4444';
@@ -1091,21 +1758,40 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           ctx.lineTo(2.5, -6);
           ctx.closePath();
           ctx.fill();
-        } else if (l.type === 'fire') {
-          ctx.shadowColor = '#EF4444';
+        } else if (laserElements.includes('lightning')) {
+          ctx.shadowColor = l.color || '#FACC15';
           ctx.shadowBlur = 14;
-          ctx.fillStyle = '#EF4444';
+          ctx.strokeStyle = l.color || '#FACC15';
+          ctx.lineWidth = 2.5;
           ctx.beginPath();
-          ctx.arc(l.x, l.y, 4.5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#FDE047';
+          ctx.moveTo(l.x, l.y);
+          ctx.lineTo(l.x + (Math.random() - 0.5) * 5, l.y + 6);
+          ctx.lineTo(l.x, l.y + 14);
+          ctx.stroke();
+        } else if (laserElements.includes('light')) {
+          ctx.shadowColor = l.color || '#FEF08A';
+          ctx.shadowBlur = 18;
+          ctx.strokeStyle = l.color || '#FEF08A';
+          ctx.lineWidth = 4;
           ctx.beginPath();
-          ctx.arc(l.x, l.y, 2.2, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (l.type === 'ice') {
-          ctx.shadowColor = '#38BDF8';
+          ctx.moveTo(l.x, l.y + 8);
+          ctx.lineTo(l.x, l.y - 8);
+          ctx.stroke();
+        } else if (laserElements.includes('wind')) {
+          ctx.shadowColor = l.color || '#67E8F9';
           ctx.shadowBlur = 12;
-          ctx.fillStyle = '#38BDF8';
+          ctx.fillStyle = l.color || '#67E8F9';
+          ctx.beginPath();
+          ctx.moveTo(l.x, l.y - 9);
+          ctx.lineTo(l.x + 4, l.y);
+          ctx.lineTo(l.x, l.y + 9);
+          ctx.lineTo(l.x - 4, l.y);
+          ctx.closePath();
+          ctx.fill();
+        } else if (laserElements.includes('ice')) {
+          ctx.shadowColor = l.color || '#38BDF8';
+          ctx.shadowBlur = 12;
+          ctx.fillStyle = l.color || '#38BDF8';
           ctx.beginPath();
           ctx.moveTo(l.x, l.y - 7);
           ctx.lineTo(l.x + 3.5, l.y);
@@ -1117,65 +1803,41 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           ctx.beginPath();
           ctx.arc(l.x, l.y, 1.5, 0, Math.PI * 2);
           ctx.fill();
-        } else if (l.type === 'poison' || l.type === 'poison_fire') {
-          ctx.shadowColor = l.color;
-          ctx.shadowBlur = 14;
-          ctx.fillStyle = l.color;
-          ctx.beginPath();
-          ctx.arc(l.x, l.y, 4.5, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (l.type === 'wind' || l.type === 'ice_wind') {
-          ctx.shadowColor = l.color;
-          ctx.shadowBlur = 12;
-          ctx.fillStyle = l.color;
-          ctx.beginPath();
-          ctx.moveTo(l.x, l.y - 9);
-          ctx.lineTo(l.x + 4, l.y);
-          ctx.lineTo(l.x, l.y + 9);
-          ctx.lineTo(l.x - 4, l.y);
-          ctx.closePath();
-          ctx.fill();
-        } else if (l.type === 'earth') {
-          ctx.shadowColor = l.color;
+        } else if (laserElements.includes('earth')) {
+          ctx.shadowColor = l.color || '#C08457';
           ctx.shadowBlur = 10;
-          ctx.fillStyle = l.color;
+          ctx.fillStyle = l.color || '#C08457';
           ctx.beginPath();
           ctx.moveTo(l.x, l.y - 6);
           ctx.lineTo(l.x + 5, l.y + 3);
           ctx.lineTo(l.x - 4, l.y + 5);
           ctx.closePath();
           ctx.fill();
-        } else if (l.type === 'light' || l.type === 'shadow_light') {
-          ctx.shadowColor = l.color;
-          ctx.shadowBlur = 18;
-          ctx.strokeStyle = l.color;
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.moveTo(l.x, l.y + 8);
-          ctx.lineTo(l.x, l.y - 8);
-          ctx.stroke();
-        } else if (l.type === 'shadow') {
-          ctx.shadowColor = l.color;
+        } else if (laserElements.includes('shadow')) {
+          ctx.shadowColor = l.color || '#C084FC';
           ctx.shadowBlur = 15;
-          ctx.fillStyle = l.color;
+          ctx.fillStyle = l.color || '#C084FC';
           ctx.beginPath();
           ctx.arc(l.x, l.y, 5, 0, Math.PI * 2);
           ctx.fill();
-        } else if (
-          l.type === 'lightning' ||
-          l.type === 'ice_lightning' ||
-          l.type === 'fire_lightning' ||
-          l.type === 'rocket_lightning'
-        ) {
-          ctx.shadowColor = '#FACC15';
+        } else if (laserElements.includes('poison')) {
+          ctx.shadowColor = l.color || '#A3E635';
           ctx.shadowBlur = 14;
-          ctx.strokeStyle = '#FACC15';
-          ctx.lineWidth = 2.5;
+          ctx.fillStyle = l.color || '#A3E635';
           ctx.beginPath();
-          ctx.moveTo(l.x, l.y);
-          ctx.lineTo(l.x + (Math.random() - 0.5) * 5, l.y + 6);
-          ctx.lineTo(l.x, l.y + 14);
-          ctx.stroke();
+          ctx.arc(l.x, l.y, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (laserElements.includes('fire')) {
+          ctx.shadowColor = '#EF4444';
+          ctx.shadowBlur = 14;
+          ctx.fillStyle = '#EF4444';
+          ctx.beginPath();
+          ctx.arc(l.x, l.y, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#FDE047';
+          ctx.beginPath();
+          ctx.arc(l.x, l.y, 2.2, 0, Math.PI * 2);
+          ctx.fill();
         } else {
           // Standard laser
           ctx.shadowColor = l.color;
@@ -1268,6 +1930,20 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             const hitY = l.y;
             if (l.pierce) {
               l.hitTargets = [...(l.hitTargets || []), m];
+              if (l.ricochet) {
+                // Ricochet bends toward another nearby meteor after each hit.
+                const nextTarget = g.meteors.find(
+                  other => other !== m && !l.hitTargets.includes(other)
+                );
+                if (nextTarget) {
+                  const angle = Math.atan2(nextTarget.y - l.y, nextTarget.x - l.x);
+                  const speed = Math.max(10, Math.hypot(l.vx, l.vy));
+                  l.vx = Math.cos(angle) * speed;
+                  l.vy = Math.sin(angle) * speed;
+                } else {
+                  g.lasers.splice(j, 1);
+                }
+              }
             } else {
               g.lasers.splice(j, 1);
             }
@@ -1532,9 +2208,22 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           const aimAngle = Math.atan2(p.y - originY, p.x - b.x);
 
           switch (skill.id) {
-            case 'aimed':
-              makeBossShot(aimAngle, 4.1, 7);
+            case 'aimed': {
+              // Hunter Shot is deliberately less accurate, slower, and short-lived.
+              // Disable elemental homing for this skill so it remains dodgeable.
+              const hunterAngle = aimAngle + (Math.random() - 0.5) * 0.42;
+              makeBossShot(hunterAngle, 2.55, 4.8);
+              const hunterShot = g.bossProjectiles[g.bossProjectiles.length - 1];
+              if (hunterShot) {
+                const hunterSpeed = 2.55;
+                hunterShot.vx = Math.cos(hunterAngle) * hunterSpeed;
+                hunterShot.vy = Math.sin(hunterAngle) * hunterSpeed;
+                hunterShot.radius = 4.8;
+                hunterShot.homing = false;
+                hunterShot.lifetime = 1.45;
+              }
               break;
+            }
             case 'fan':
               for (let n = -2; n <= 2; n++) makeBossShot(Math.PI / 2 + n * 0.22, 3.5, 6.5);
               break;
@@ -1737,13 +2426,22 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                 });
               }
 
-              // Guaranteed Drop: Permanent Elemental Skill Core + Powerups!
+              // Boss drops a weapon core, one random permanent ability, and a shield.
               const skillOrder = ELEMENT_SKILLS;
               const droppedSkill = skillOrder[(g.wave - 1) % skillOrder.length];
 
+              const abilityDrops = ['triple', 'ricochet', 'piercing'];
+              const droppedAbility = abilityDrops[Math.floor(Math.random() * abilityDrops.length)];
               g.powerups.push(
                 { x: b.x, y: b.y - 14, type: 'skill', weaponType: droppedSkill, vy: 1.6, pulse: 0 },
-                { x: b.x - 24, y: b.y + 12, type: 'triple', vy: 2.2, pulse: 0 },
+                {
+                  x: b.x - 24,
+                  y: b.y + 12,
+                  type: 'ability',
+                  abilityType: droppedAbility,
+                  vy: 2.2,
+                  pulse: 0,
+                },
                 { x: b.x + 24, y: b.y + 12, type: 'shield', vy: 2.2, pulse: 0 }
               );
 
@@ -1787,6 +2485,16 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       // 4.6. UPDATE & DRAW BOSS PROJECTILES
       for (let i = g.bossProjectiles.length - 1; i >= 0; i--) {
         const bp = g.bossProjectiles[i];
+
+        // Some boss shots (e.g. Hunter Shot) expire automatically after a short duration.
+        if (typeof bp.lifetime === 'number') {
+          bp.lifetime -= delta;
+          if (bp.lifetime <= 0) {
+            g.bossProjectiles.splice(i, 1);
+            continue;
+          }
+        }
+
         if (bp.homing) {
           const targetAngle = Math.atan2(p.y - bp.y, p.x - bp.x);
           const currentAngle = Math.atan2(bp.vy, bp.vx);
@@ -1897,9 +2605,11 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         } else {
           const glowSize = Math.sin(pu.pulse) * 3 + 12;
           ctx.save();
-          ctx.shadowColor = pu.type === 'triple' ? '#F59E0B' : '#06B6D4';
+          const abilityInfo = ABILITY_INFO[pu.abilityType] || ABILITY_INFO.triple;
+          const powerupColor = pu.type === 'ability' ? abilityInfo.color : '#06B6D4';
+          ctx.shadowColor = powerupColor;
           ctx.shadowBlur = 12;
-          ctx.fillStyle = pu.type === 'triple' ? '#F59E0B' : '#06B6D4';
+          ctx.fillStyle = powerupColor;
           ctx.beginPath();
           ctx.arc(pu.x, pu.y, glowSize, 0, Math.PI * 2);
           ctx.fill();
@@ -1909,7 +2619,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           ctx.font = 'bold 10px monospace';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText(pu.type === 'triple' ? '3X' : 'SHD', pu.x, pu.y);
+          ctx.fillText(pu.type === 'ability' ? abilityInfo.icon : 'SHD', pu.x, pu.y);
           ctx.restore();
         }
 
@@ -1923,19 +2633,24 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             p.weapon = combinedWeapon;
             setWeapon(combinedWeapon);
             const wName = WEAPONS[combinedWeapon]?.name || 'Dual Plasma';
-            const comboSucceeded = combinedWeapon !== 'default' && combinedWeapon !== pu.weaponType;
+            const comboSucceeded =
+              combinedWeapon !== 'default' &&
+              combinedWeapon !== pu.weaponType &&
+              combinedWeapon !== previousWeapon;
+            const fusionFailed =
+              previousWeapon !== 'default' &&
+              previousWeapon !== pu.weaponType &&
+              !comboSucceeded &&
+              combinedWeapon === pu.weaponType;
 
             g.bossVictory = {
               text: comboSucceeded
                 ? `⚡ COMBO FORGED: ${wName.toUpperCase()}!`
-                : combinedWeapon === 'default'
-                  ? (getWeaponElements(previousWeapon).includes('ice') &&
-                      getWeaponElements(pu.weaponType).includes('fire')) ||
-                    (getWeaponElements(previousWeapon).includes('fire') &&
-                      getWeaponElements(pu.weaponType).includes('ice'))
-                    ? '💥 ICE + FIRE FUSION FAILED! DUAL PLASMA RESTORED!'
-                    : '💥 ELEMENTS CLASHED! WEAPON RESET TO DEFAULT!'
-                  : `✨ WEAPON: ${wName.toUpperCase()} EQUIPPED!`,
+                : fusionFailed
+                  ? `💥 FUSION FAILED! SWITCHED TO ${wName.toUpperCase()}!`
+                  : combinedWeapon === 'default'
+                    ? '💥 WEAPON RESET TO DEFAULT!'
+                    : `✨ WEAPON: ${wName.toUpperCase()} EQUIPPED!`,
               timer: 3.5,
             };
             for (let k = 0; k < 24; k++) {
@@ -1952,10 +2667,9 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                 life: 0.55,
               });
             }
-          } else if (pu.type === 'triple') {
+          } else if (pu.type === 'ability') {
             sfx.powerup();
-            p.tripleShotTime = 9; // 9 seconds of triple shot
-            setTripleShotTimer(9);
+            grantAbility(pu.abilityType);
           } else {
             sfx.powerup();
             p.shield = true;
@@ -2104,7 +2818,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/95 animate-fadeIn touch-none select-none overflow-hidden"
+      className="fixed inset-0 z-[100] flex items-stretch justify-center p-0 bg-black/95 animate-fadeIn touch-none select-none overflow-hidden"
       onClick={e => {
         // Prevent background clicks from doing anything, only close if backdrop clicked when not playing
         if (e.target === e.currentTarget && gameState !== 'playing') {
@@ -2116,7 +2830,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       <div
         ref={containerRef}
         onClick={e => e.stopPropagation()}
-        className="relative w-full max-w-[440px] bg-[#070417]/95 border border-purple-500/30 rounded-3xl shadow-[0_0_60px_rgba(139,92,246,0.3)] overflow-hidden flex flex-col items-center"
+        className="relative w-full max-w-[440px] h-screen max-h-screen bg-[#070417]/95 border-x border-purple-500/30 shadow-[0_0_60px_rgba(139,92,246,0.3)] overflow-hidden flex flex-col items-center"
       >
         {/* Top Header Bar */}
         <div className="w-full px-4 py-3 border-b border-white/[0.08] flex items-center justify-between bg-white/[0.02]">
@@ -2185,31 +2899,22 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             </span>
           </div>
 
-          {/* Active Buffs & Lives */}
-          <div className="flex items-center gap-2">
-            {tripleShotTimer > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-2/20 text-accent-2 text-[10px] font-bold border border-accent-2/30 animate-pulse">
-                <FaBolt size={9} /> 3X LASER ({tripleShotTimer}s)
-              </span>
-            )}
-
-            {/* Lives Remaining */}
-            <div className="flex items-center gap-1">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <span
-                  key={i}
-                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                    i < lives ? 'bg-accent shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'bg-white/10'
-                  }`}
-                />
-              ))}
-            </div>
+          {/* Lives Remaining */}
+          <div className="flex items-center gap-1" title={`${lives} lives remaining`}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <span
+                key={i}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  i < lives ? 'bg-accent shadow-[0_0_8px_rgba(249,115,22,0.8)]' : 'bg-white/10'
+                }`}
+              />
+            ))}
           </div>
         </div>
 
         {/* Game Canvas Container */}
         <div
-          className="relative w-full flex justify-center bg-[#02000c] touch-none select-none overflow-hidden"
+          className="relative w-full flex-1 min-h-0 flex justify-center bg-[#02000c] touch-none select-none overflow-hidden"
           onPointerMove={handlePointerMove}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
@@ -2217,7 +2922,90 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           onTouchStart={handlePointerDown}
           onTouchEnd={handlePointerUp}
         >
-          <canvas ref={canvasRef} className="block cursor-crosshair max-w-full" />
+          <canvas ref={canvasRef} className="block cursor-crosshair max-w-full h-full" />
+
+          {/* Compact ability badges live inside the game screen */}
+          <div
+            className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 pointer-events-none"
+            aria-label="Active abilities"
+          >
+            {Array.from({ length: 2 }).map((_, index) => {
+              const ability = activeAbilities[index];
+              const info = ability ? ABILITY_INFO[ability] : null;
+              return (
+                <div
+                  key={index}
+                  title={info ? info.name : 'Empty ability slot'}
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-200 ${
+                    info ? 'bg-black/70 shadow-lg' : 'border-white/10 bg-black/35'
+                  }`}
+                  style={
+                    info
+                      ? {
+                          borderColor: `${info.color}99`,
+                          color: info.color,
+                          boxShadow: `0 0 14px ${info.color}25`,
+                        }
+                      : undefined
+                  }
+                >
+                  {info ? (
+                    <span className="text-base font-black leading-none">{info.icon}</span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-white/25">+</span>
+                  )}
+                </div>
+              );
+            })}
+            <span className="ml-0.5 rounded-md bg-black/45 px-1.5 py-1 text-[9px] font-bold tracking-wider text-white/50 backdrop-blur-sm">
+              SKILL
+            </span>
+          </div>
+
+          {/* Active elemental badges, mirrored from the ability badge style */}
+          <div
+            className="absolute bottom-3 right-3 z-10 flex items-center justify-end gap-1.5 pointer-events-none"
+            aria-label="Active elements"
+          >
+            {(() => {
+              const elements = getWeaponElements(weapon);
+              return (
+                <>
+                  <span className="mr-0.5 rounded-md bg-black/45 px-1.5 py-1 text-[9px] font-bold tracking-wider text-white/50 backdrop-blur-sm">
+                    ELEMENT
+                  </span>
+                  {(elements.length ? elements : ['default']).map((element, index) => {
+                    const info = WEAPONS[element];
+                    const isDefault = element === 'default';
+                    return (
+                      <div
+                        key={`${element}-${index}`}
+                        title={isDefault ? 'No element equipped' : info?.name || element}
+                        className={`flex h-9 w-9 items-center justify-center rounded-xl border backdrop-blur-md transition-all duration-200 ${
+                          isDefault ? 'border-white/10 bg-black/35' : 'bg-black/70 shadow-lg'
+                        }`}
+                        style={
+                          !isDefault && info
+                            ? {
+                                borderColor: `${info.color}99`,
+                                color: info.color,
+                                boxShadow: `0 0 14px ${info.color}25`,
+                              }
+                            : undefined
+                        }
+                      >
+                        {isDefault ? (
+                          <span className="text-[10px] font-bold text-white/25">—</span>
+                        ) : (
+                          <span className="text-base leading-none">{info?.icon || '✦'}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()}
+          </div>
 
           {/* Start Screen Overlay */}
           {gameState === 'start' && (
@@ -2276,59 +3064,95 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
               <div className="mt-3 p-3 rounded-2xl bg-black/40 border border-cyan-400/20 text-left w-full max-w-[280px]">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <h3 className="text-xs font-black tracking-wider text-cyan-200">
-                    ELEMENT FUSION
+                    ALL-ELEMENT FUSION
                   </h3>
-                  <span className="text-[9px] font-mono text-white/50">PICK 2 ELEMENTS</span>
+                  <span className="text-[9px] font-mono text-cyan-400 font-bold">
+                    36 COMBINATIONS
+                  </span>
                 </div>
-                <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-[10px] sm:text-[11px] font-mono">
-                  <span className="text-white/75">❄️ Ice + ⚡ Lightning</span>
-                  <span className="text-cyan-200 text-right">Permafrost Storm</span>
-                  <span className="text-white/75">🔥 Fire + ⚡ Lightning</span>
-                  <span className="text-rose-300 text-right">Plasma Inferno</span>
-                  <span className="text-white/75">❄️ Ice + 🌪️ Wind</span>
-                  <span className="text-sky-200 text-right">Absolute Zero</span>
-                  <span className="text-white/75">☠️ Poison + 🔥 Fire</span>
-                  <span className="text-lime-200 text-right">Toxic Blaze</span>
-                  <span className="text-white/75">☀️ Light + 🌑 Shadow</span>
-                  <span className="text-violet-200 text-right">Eclipse Beam</span>
-                  <span className="text-white/75">🚀 Rocket + ⚡ Lightning</span>
-                  <span className="text-yellow-200 text-right">Storm Seeker</span>
-                </div>
-                <div className="mt-3 pt-2 border-t border-white/10">
-                  <div className="text-[9px] font-black tracking-wider text-amber-200 mb-1.5">
-                    FUSION TRADE-OFFS
-                  </div>
-                  <div className="space-y-1.5 text-[10px] leading-relaxed text-white/60">
-                    <p>
-                      🌩️ <span className="text-cyan-100">Permafrost Storm:</span> lower damage;
-                      limited chain range, less effective when enemies are spread apart.
-                    </p>
-                    <p>
-                      ⚡🔥 <span className="text-rose-100">Plasma Inferno:</span> high burst damage,
-                      but slow shots and long cooldown.
-                    </p>
-                    <p>
-                      ❄️🌪️ <span className="text-sky-100">Absolute Zero:</span> low direct damage;
-                      fast enemies can escape the vortex.
-                    </p>
-                    <p>
-                      ☣️🔥 <span className="text-lime-100">Toxic Blaze:</span> low initial damage;
-                      requires time for poison and burn to stack.
-                    </p>
-                    <p>
-                      🌘 <span className="text-violet-100">Eclipse Beam:</span> must aim in a
-                      straight line and has a longer cooldown.
-                    </p>
-                    <p>
-                      🚀⚡ <span className="text-yellow-100">Storm Seeker:</span> rockets home in on
-                      targets, but low firing rate and limited chains.
-                    </p>
+                <p className="text-[10px] text-white/70 leading-relaxed mb-2.5">
+                  Setiap pasang elemen kini dapat digabungkan menjadi senjata fusion unik! Ambil
+                  elemen kedua untuk menempa fusi dahsyat.
+                </p>
+                <div className="max-h-48 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin scrollbar-thumb-white/20">
+                  <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1 text-[10px] font-mono">
+                    <span className="text-white/75">🔥 Fire + ❄️ Ice</span>
+                    <span className="text-pink-300 text-right">Thermal Shatter</span>
+                    <span className="text-white/75">🔥 Fire + ⚡ Lightning</span>
+                    <span className="text-rose-300 text-right">Plasma Inferno</span>
+                    <span className="text-white/75">🔥 Fire + 🚀 Rocket</span>
+                    <span className="text-orange-400 text-right">Hellfire Warhead</span>
+                    <span className="text-white/75">🔥 Fire + ☠️ Poison</span>
+                    <span className="text-lime-200 text-right">Toxic Blaze</span>
+                    <span className="text-white/75">🔥 Fire + 🌪️ Wind</span>
+                    <span className="text-orange-300 text-right">Firestorm Lance</span>
+                    <span className="text-white/75">🪨 Earth + 🔥 Fire</span>
+                    <span className="text-amber-400 text-right">Magma Eruption</span>
+                    <span className="text-white/75">☀️ Light + 🔥 Fire</span>
+                    <span className="text-yellow-300 text-right">Solar Supernova</span>
+                    <span className="text-white/75">🌑 Shadow + 🔥 Fire</span>
+                    <span className="text-purple-400 text-right">Abyssal Hellfire</span>
+                    <span className="text-white/75">❄️ Ice + ⚡ Lightning</span>
+                    <span className="text-cyan-200 text-right">Permafrost Storm</span>
+                    <span className="text-white/75">❄️ Ice + 🚀 Rocket</span>
+                    <span className="text-sky-300 text-right">Cryo Torpedo</span>
+                    <span className="text-white/75">❄️ Ice + ☠️ Poison</span>
+                    <span className="text-teal-300 text-right">Cryo Venom</span>
+                    <span className="text-white/75">❄️ Ice + 🌪️ Wind</span>
+                    <span className="text-sky-200 text-right">Absolute Zero</span>
+                    <span className="text-white/75">🪨 Earth + ❄️ Ice</span>
+                    <span className="text-blue-300 text-right">Glacial Permafrost</span>
+                    <span className="text-white/75">☀️ Light + ❄️ Ice</span>
+                    <span className="text-indigo-200 text-right">Aurora Prism</span>
+                    <span className="text-white/75">🌑 Shadow + ❄️ Ice</span>
+                    <span className="text-indigo-400 text-right">Black Ice</span>
+                    <span className="text-white/75">🚀 Rocket + ⚡ Lightning</span>
+                    <span className="text-yellow-200 text-right">Storm Seeker</span>
+                    <span className="text-white/75">⚡ Lightning + ☠️ Poison</span>
+                    <span className="text-lime-400 text-right">Neurotoxin Arc</span>
+                    <span className="text-white/75">⚡ Lightning + 🌪️ Wind</span>
+                    <span className="text-cyan-300 text-right">Thunder Tempest</span>
+                    <span className="text-white/75">🪨 Earth + ⚡ Lightning</span>
+                    <span className="text-yellow-400 text-right">Tectonic Surge</span>
+                    <span className="text-white/75">☀️ Light + ⚡ Lightning</span>
+                    <span className="text-amber-200 text-right">Divine Thunder</span>
+                    <span className="text-white/75">🌑 Shadow + ⚡ Lightning</span>
+                    <span className="text-purple-300 text-right">Void Spark</span>
+                    <span className="text-white/75">🚀 Rocket + ☠️ Poison</span>
+                    <span className="text-green-300 text-right">Bio-Hazard Warhead</span>
+                    <span className="text-white/75">🚀 Rocket + 🌪️ Wind</span>
+                    <span className="text-cyan-400 text-right">Turboflyer Missile</span>
+                    <span className="text-white/75">🪨 Earth + 🚀 Rocket</span>
+                    <span className="text-amber-500 text-right">Bunker Buster</span>
+                    <span className="text-white/75">☀️ Light + 🚀 Rocket</span>
+                    <span className="text-yellow-300 text-right">Photon Missile</span>
+                    <span className="text-white/75">🌑 Shadow + 🚀 Rocket</span>
+                    <span className="text-violet-400 text-right">Dreadnought Core</span>
+                    <span className="text-white/75">☠️ Poison + 🌪️ Wind</span>
+                    <span className="text-emerald-300 text-right">Miasma Cyclone</span>
+                    <span className="text-white/75">🪨 Earth + ☠️ Poison</span>
+                    <span className="text-lime-500 text-right">Venom Geode</span>
+                    <span className="text-white/75">☀️ Light + ☠️ Poison</span>
+                    <span className="text-lime-300 text-right">Purifying Rot</span>
+                    <span className="text-white/75">🌑 Shadow + ☠️ Poison</span>
+                    <span className="text-purple-500 text-right">Corrupting Plague</span>
+                    <span className="text-white/75">🪨 Earth + 🌪️ Wind</span>
+                    <span className="text-amber-400 text-right">Sandstorm Scythe</span>
+                    <span className="text-white/75">☀️ Light + 🌪️ Wind</span>
+                    <span className="text-sky-300 text-right">Zephyr Ray</span>
+                    <span className="text-white/75">🌑 Shadow + 🌪️ Wind</span>
+                    <span className="text-indigo-400 text-right">Nether Gale</span>
+                    <span className="text-white/75">🪨 Earth + ☀️ Light</span>
+                    <span className="text-amber-200 text-right">Crystal Prism</span>
+                    <span className="text-white/75">🪨 Earth + 🌑 Shadow</span>
+                    <span className="text-slate-300 text-right">Obsidian Oblivion</span>
+                    <span className="text-white/75">☀️ Light + 🌑 Shadow</span>
+                    <span className="text-violet-200 text-right">Eclipse Beam</span>
                   </div>
                 </div>
                 <div className="mt-2 pt-2 border-t border-white/10 text-[10px] leading-relaxed text-white/55">
-                  ❄️ Ice + 🔥 Fire are incompatible: fusion fails, elemental bonuses are lost, and
-                  weapon reverts to{' '}
-                  <span className="font-bold text-orange-300">🔫 Dual Plasma</span>.
+                  Jika mengambil elemen baru saat sudah memegang fusion weapon, senjata akan
+                  langsung beralih ke elemen drop terakhir yang diambil.
                 </div>
               </div>
             </div>
