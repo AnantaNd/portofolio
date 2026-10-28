@@ -1527,11 +1527,11 @@ const drawElementProjectile = (ctx, l, time) => {
   ctx.restore();
 };
 
-// Jarak pesawat di atas jari saat main pakai touch (px) agar tidak tertutup jari/tangan
-const TOUCH_Y_OFFSET = 160;
+// Jarak pesawat di atas jari saat main pakai touch (px) agar pas dan tidak terlalu tinggi
+const TOUCH_Y_OFFSET = 75;
 
-// Posisi vertikal awal pesawat di layar touch (rasio dari tinggi canvas - lebih naik agar mudah dikontrol)
-const TOUCH_START_Y_RATIO = 0.58;
+// Posisi vertikal awal pesawat di layar touch (rasio dari tinggi canvas)
+const TOUCH_START_Y_RATIO = 0.72;
 
 const isCoarsePointer = () =>
   typeof window !== 'undefined' && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
@@ -1836,9 +1836,9 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     if (relativeX >= 15 && relativeX <= gameRef.current.width - 15) {
       gameRef.current.player.x = relativeX;
     }
-    // Clamp (bukan skip) supaya pesawat tetap mengikuti jari walau offset besar
-    const minY = gameRef.current.height * 0.25;
-    const maxY = gameRef.current.height - (isTouch ? 80 : 48);
+    // Clamp (bukan skip) supaya pesawat tetap mengikuti jari walau offset disesuaikan
+    const minY = gameRef.current.height * 0.35;
+    const maxY = gameRef.current.height - (isTouch ? 55 : 48);
     gameRef.current.player.y = Math.max(minY, Math.min(maxY, targetY));
   };
 
@@ -2567,7 +2567,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           const baseColor = elementCombo.color || skill.color || b.theme.secondary;
           const makeBossShot = (angle, speed = 3.5, radius = 6.5, x = b.x, y = originY) => {
             const isHoming = bossElements.includes('rocket');
-            const adjustedSpeed = speed * (bossElements.includes('lightning') ? 1.12 : 1);
+            const adjustedSpeed = speed * (bossElements.includes('lightning') ? 1.05 : 1);
             const adjustedRadius =
               radius *
               (bossElements.includes('fire') || bossElements.includes('poison') ? 1.16 : 1);
@@ -2580,6 +2580,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
               color: baseColor,
               elements: bossElements,
               homing: isHoming,
+              homingTimer: isHoming ? 1.8 : 0, // Homing hanya aktif selama 1.8 detik agar bisa di-dodge
+              lifetime: 4.5, // Seluruh projectile boss memiliki batas waktu/lifetime agar tidak menumpuk di arena
               fusionId: elementCombo.id,
             });
           };
@@ -2621,6 +2623,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   color: baseColor,
                   elements: bossElements,
                   homing: bossElements.includes('rocket'),
+                  homingTimer: bossElements.includes('rocket') ? 1.8 : 0,
+                  lifetime: 4.5,
                   fusionId: elementCombo.id,
                 });
               }
@@ -2971,16 +2975,25 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
         }
 
         if (bp.homing) {
-          const targetAngle = Math.atan2(p.y - bp.y, p.x - bp.x);
-          const currentAngle = Math.atan2(bp.vy, bp.vx);
-          const angleDiff = Math.atan2(
-            Math.sin(targetAngle - currentAngle),
-            Math.cos(targetAngle - currentAngle)
-          );
-          const nextAngle = currentAngle + Math.max(-0.045, Math.min(0.045, angleDiff));
-          const speed = Math.hypot(bp.vx, bp.vy);
-          bp.vx = Math.cos(nextAngle) * speed;
-          bp.vy = Math.sin(nextAngle) * speed;
+          if (typeof bp.homingTimer === 'number') {
+            bp.homingTimer -= delta;
+            if (bp.homingTimer <= 0) {
+              bp.homing = false;
+            }
+          }
+          if (bp.homing) {
+            const targetAngle = Math.atan2(p.y - bp.y, p.x - bp.x);
+            const currentAngle = Math.atan2(bp.vy, bp.vx);
+            const angleDiff = Math.atan2(
+              Math.sin(targetAngle - currentAngle),
+              Math.cos(targetAngle - currentAngle)
+            );
+            // Belokan diperhalus (0.024 radian/frame vs sebelumnya 0.045) agar fair dan bisa dihindari pemain
+            const nextAngle = currentAngle + Math.max(-0.024, Math.min(0.024, angleDiff));
+            const speed = Math.hypot(bp.vx, bp.vy);
+            bp.vx = Math.cos(nextAngle) * speed;
+            bp.vy = Math.sin(nextAngle) * speed;
+          }
         }
         bp.x += bp.vx;
         bp.y += bp.vy;
