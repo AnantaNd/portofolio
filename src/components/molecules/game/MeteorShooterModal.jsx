@@ -1063,75 +1063,73 @@ const CHEAT_COMBOS = [
   },
 ];
 
+const AWAKEN_CHEATS = [
+  { code: 'Digit1', element: 'fire', label: '⌥ / Ctrl + 1', name: 'Fire' },
+  { code: 'Digit2', element: 'ice', label: '⌥ / Ctrl + 2', name: 'Ice' },
+  { code: 'Digit3', element: 'poison', label: '⌥ / Ctrl + 3', name: 'Poison' },
+  { code: 'Digit4', element: 'earth', label: '⌥ / Ctrl + 4', name: 'Earth' },
+  { code: 'Digit5', element: 'lightning', label: '⌥ / Ctrl + 5', name: 'Volt' },
+  { code: 'Digit6', element: 'wind', label: '⌥ / Ctrl + 6', name: 'Wind' },
+  { code: 'Digit7', element: 'light', label: '⌥ / Ctrl + 7', name: 'Light' },
+  { code: 'Digit8', element: 'shadow', label: '⌥ / Ctrl + 8', name: 'Shadow' },
+  { code: 'Digit9', element: 'rocket', label: '⌥ / Ctrl + 9', name: 'Rocket' },
+];
+
 const getWeaponElements = weaponId => WEAPONS[weaponId]?.elements || [];
 
-// Calculate weapon progression and awaken stacking
+// Element awaken progression: a fusion keeps BOTH elements while repeated pickups
+// strengthen only the element that was picked (maximum level 3).
 const processWeaponStack = (player, pickedId) => {
   const currentWeapon = player.weapon || 'default';
   const currentElements = getWeaponElements(currentWeapon);
   const pickedElements = getWeaponElements(pickedId);
+  const pickedElement = pickedElements[0] || pickedId;
+  const awakenedLevels = { ...(player.awakenedLevels || {}) };
 
-  // If currently default, directly switch to picked skill
   if (!currentElements.length) {
     return {
       newWeapon: pickedId,
       stackLevel: 1,
       awakenElement: null,
+      awakenedLevels: {},
       type: 'equip',
     };
   }
 
-  // If already a fusion weapon (2 elements)
-  if (currentElements.length === 2) {
-    const [el1, el2] = currentElements;
-    // If the picked drop matches one of the two fusion elements -> AWAKEN STACK!
-    if (pickedId === el1 || pickedId === el2) {
-      const currentStack = player.stackLevel || 1;
-      const nextStack = Math.min(3, currentStack + 1);
-      return {
-        newWeapon: currentWeapon,
-        stackLevel: nextStack,
-        awakenElement: pickedId,
-        type: 'awaken',
-      };
-    }
-    // If picked drop is a completely different element -> switch to picked element
+  // Picking an element already present in the weapon awakens that element,
+  // without replacing the other element in a fusion.
+  if (currentElements.includes(pickedElement)) {
+    const nextLevel = Math.min(3, (awakenedLevels[pickedElement] || 0) + 1);
+    awakenedLevels[pickedElement] = nextLevel;
     return {
-      newWeapon: pickedId,
-      stackLevel: 1,
-      awakenElement: null,
-      type: 'switch',
+      newWeapon: currentWeapon,
+      stackLevel: nextLevel,
+      awakenElement: pickedElement,
+      awakenedLevels,
+      type: 'awaken',
     };
   }
 
-  // If currently a single element
+  // A new element upgrades a single-element weapon into a fusion.
   if (currentElements.length === 1) {
-    const singleEl = currentElements[0];
-    if (singleEl === pickedId) {
-      // Picked identical element again
-      return {
-        newWeapon: currentWeapon,
-        stackLevel: Math.min(3, (player.stackLevel || 1) + 1),
-        awakenElement: singleEl,
-        type: 'stack_single',
-      };
-    }
-    // Form new fusion weapon
-    const comboKey = [singleEl, pickedId].sort().join('+');
+    const comboKey = [currentElements[0], pickedElement].sort().join('+');
     const fusionId = ELEMENT_COMBOS[comboKey] || pickedId;
     return {
       newWeapon: fusionId,
-      stackLevel: 1,
+      stackLevel: 0,
       awakenElement: null,
+      awakenedLevels: {},
       type: fusionId !== pickedId ? 'fusion' : 'switch',
     };
   }
 
+  // A completely different element switches the weapon and clears old awaken stacks.
   return {
     newWeapon: pickedId,
     stackLevel: 1,
     awakenElement: null,
-    type: 'equip',
+    awakenedLevels: {},
+    type: 'switch',
   };
 };
 
@@ -1515,6 +1513,418 @@ const getProjectileSprites = (elements, color) => {
   return frames;
 };
 
+// Awaken visuals are static, tiny offscreen sprites. Build each element/level once;
+// never create gradients, paths, or shadowBlur inside the per-frame projectile loop.
+const AWAKEN_SPRITE_SIZE = 64;
+const awakenSpriteCache = new Map();
+const AWAKEN_COLORS = {
+  fire: '#FB923C',
+  ice: '#7DD3FC',
+  poison: '#A3E635',
+  earth: '#C08457',
+  lightning: '#FDE047',
+  wind: '#67E8F9',
+  light: '#FEF08A',
+  shadow: '#C084FC',
+  rocket: '#F59E0B',
+};
+
+const getAwakenSprite = (element, level) => {
+  const safeLevel = Math.max(1, Math.min(3, level || 1));
+  const key = `${element}:${safeLevel}`;
+  const cached = awakenSpriteCache.get(key);
+  if (cached) return cached;
+
+  const sprite = document.createElement('canvas');
+  sprite.width = AWAKEN_SPRITE_SIZE;
+  sprite.height = AWAKEN_SPRITE_SIZE;
+  const c = sprite.getContext('2d');
+  if (!c) return null;
+
+  const color = AWAKEN_COLORS[element] || '#FFFFFF';
+  const center = AWAKEN_SPRITE_SIZE / 2;
+  const radius = 10 + safeLevel * 2;
+  c.translate(center, center);
+  c.lineCap = 'round';
+  c.lineJoin = 'round';
+
+  // Crisp layered emblem: all paths are baked into a cached sprite, never drawn per frame.
+  // The brighter inner stroke keeps the Awaken readable over busy projectile colors.
+  c.globalAlpha = 0.38;
+  c.fillStyle = color;
+  c.beginPath();
+  c.arc(0, 0, 8 + safeLevel * 1.5, 0, Math.PI * 2);
+  c.fill();
+  c.globalAlpha = 0.95;
+  c.strokeStyle = color;
+  c.lineWidth = safeLevel === 3 ? 2.1 : 1.5;
+
+  const polygon = (points, close = true) => {
+    c.beginPath();
+    points.forEach(([x, y], index) => (index ? c.lineTo(x, y) : c.moveTo(x, y)));
+    if (close) c.closePath();
+    c.stroke();
+  };
+  const starPoints = (outer, inner, count, offset = -Math.PI / 2) => {
+    const points = [];
+    for (let i = 0; i < count * 2; i++) {
+      const a = offset + (Math.PI * i) / count;
+      const r = i % 2 === 0 ? outer : inner;
+      points.push([Math.cos(a) * r, Math.sin(a) * r]);
+    }
+    return points;
+  };
+
+  // Fire Awaken gets a full flame silhouette (not a generic emblem): layered
+  // tongues, a hot core, ember sparks, and level-specific flame crowns. This is
+  // rendered once into the sprite cache, so none of these paths run per frame.
+  if (element === 'fire') {
+    const flame = (scale, yOffset, fill) => {
+      c.save();
+      c.translate(0, yOffset);
+      c.scale(scale, scale);
+      c.fillStyle = fill;
+      c.beginPath();
+      c.moveTo(0, 23);
+      c.bezierCurveTo(-12, 18, -19, 10, -14, 0);
+      c.bezierCurveTo(-13, -5, -8, -7, -7, -16);
+      c.bezierCurveTo(-1, -11, 1, -7, 0, -2);
+      c.bezierCurveTo(7, -9, 9, -15, 8, -22);
+      c.bezierCurveTo(19, -11, 22, 0, 17, 11);
+      c.bezierCurveTo(14, 18, 7, 22, 0, 23);
+      c.closePath();
+      c.fill();
+      c.restore();
+    };
+
+    // Rear flame tongues create a recognizable fire crown.
+    flame(0.78, -1, '#B91C1C');
+    flame(0.94, 1, '#EA580C');
+    flame(0.67, 2, '#FB923C');
+    // Bright inner flame / molten core.
+    c.fillStyle = '#FDE047';
+    c.beginPath();
+    c.moveTo(0, 17);
+    c.bezierCurveTo(-7, 12, -8, 5, -4, -1);
+    c.bezierCurveTo(-2, -4, -1, -7, 0, -11);
+    c.bezierCurveTo(7, -3, 8, 4, 5, 10);
+    c.bezierCurveTo(4, 14, 2, 16, 0, 17);
+    c.closePath();
+    c.fill();
+    c.fillStyle = '#FFF7CC';
+    c.beginPath();
+    c.ellipse(0, 8, 2.8, 6.5, 0, 0, Math.PI * 2);
+    c.fill();
+
+    // Embers are baked into the sprite; higher levels have more sparks.
+    c.fillStyle = safeLevel >= 3 ? '#FFF7CC' : '#FBBF24';
+    const embers = [
+      [-18, 4, 1.5],
+      [16, -5, 1.4],
+      [-12, -15, 1.1],
+      [12, 13, 1.2],
+      [2, -25, 1.1],
+      [-22, -8, 0.9],
+    ];
+    embers.slice(0, safeLevel + 2).forEach(([x, y, r]) => {
+      c.beginPath();
+      c.arc(x, y, r, 0, Math.PI * 2);
+      c.fill();
+    });
+
+    // Awaken levels add flame-shaped side flares rather than a shared geometric frame.
+    if (safeLevel >= 2) {
+      c.strokeStyle = '#FDBA74';
+      c.lineWidth = 2;
+      c.globalAlpha = 0.95;
+      for (const side of [-1, 1]) {
+        c.save();
+        c.scale(side, 1);
+        c.beginPath();
+        c.moveTo(10, 13);
+        c.quadraticCurveTo(23, 4, 18, -9);
+        c.quadraticCurveTo(17, -1, 12, 1);
+        c.stroke();
+        c.restore();
+      }
+      c.globalAlpha = 1;
+    }
+    if (safeLevel >= 3) {
+      c.strokeStyle = '#FDE047';
+      c.lineWidth = 1.5;
+      c.beginPath();
+      c.moveTo(-8, -20);
+      c.quadraticCurveTo(-2, -29, 0, -31);
+      c.quadraticCurveTo(5, -25, 8, -20);
+      c.stroke();
+      c.fillStyle = '#FFF7CC';
+      c.beginPath();
+      c.arc(0, -28, 1.7, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    awakenSpriteCache.set(key, sprite);
+    return sprite;
+  }
+
+  // Each element has a distinct silhouette rather than sharing generic circles.
+  if (element === 'fire') {
+    for (let i = 0; i < 3 + safeLevel; i++) {
+      const a = (Math.PI * 2 * i) / (3 + safeLevel);
+      c.save();
+      c.rotate(a);
+      polygon([
+        [0, -radius - 7],
+        [4, -radius],
+        [1.5, -radius + 2],
+        [0, -radius + 6],
+        [-3, -radius],
+      ]);
+      c.restore();
+    }
+    polygon(starPoints(8 + safeLevel, 3.5, 4));
+  } else if (element === 'ice') {
+    polygon([
+      [0, -radius - 3],
+      [radius * 0.72, -radius * 0.55],
+      [radius, 0],
+      [radius * 0.72, radius * 0.55],
+      [0, radius + 3],
+      [-radius * 0.72, radius * 0.55],
+      [-radius, 0],
+      [-radius * 0.72, -radius * 0.55],
+    ]);
+    for (let i = 0; i < 6; i++) {
+      const a = (i * Math.PI) / 3;
+      c.beginPath();
+      c.moveTo(Math.cos(a) * 4, Math.sin(a) * 4);
+      c.lineTo(Math.cos(a) * (radius + 5), Math.sin(a) * (radius + 5));
+      c.stroke();
+    }
+  } else if (element === 'poison') {
+    c.beginPath();
+    c.arc(0, 0, radius * 0.72, 0, Math.PI * 2);
+    c.stroke();
+    for (let i = 0; i < 3 + safeLevel; i++) {
+      const a = (Math.PI * 2 * i) / (3 + safeLevel);
+      const x = Math.cos(a) * (radius + 3),
+        y = Math.sin(a) * (radius + 3);
+      c.beginPath();
+      c.arc(x, y, 2 + (i % 2), 0, Math.PI * 2);
+      c.stroke();
+    }
+    c.beginPath();
+    c.arc(-3, -2, 2, 0, Math.PI * 2);
+    c.fillStyle = color;
+    c.fill();
+  } else if (element === 'earth') {
+    polygon([
+      [0, -radius - 4],
+      [radius * 0.82, -radius * 0.2],
+      [radius * 0.58, radius * 0.8],
+      [-radius * 0.18, radius + 2],
+      [-radius, radius * 0.15],
+      [-radius * 0.62, -radius * 0.72],
+    ]);
+    polygon(
+      [
+        [-4, -radius * 0.3],
+        [2, -2],
+        [-3, 4],
+        [4, radius * 0.5],
+      ],
+      false
+    );
+  } else if (element === 'lightning') {
+    polygon(
+      [
+        [3, -radius - 5],
+        [-radius * 0.48, -1],
+        [0, -1],
+        [-4, radius + 4],
+        [radius * 0.58, -3],
+        [radius * 0.08, -3],
+      ],
+      false
+    );
+    for (const side of [-1, 1])
+      polygon(
+        [
+          [side * 2, -3],
+          [side * (radius + 4), -radius * 0.48],
+        ],
+        false
+      );
+  } else if (element === 'wind') {
+    for (let i = 0; i < 3; i++) {
+      c.beginPath();
+      c.arc(-2, 1, radius - i * 4, -Math.PI * 0.15 + i * 0.18, Math.PI * 1.25 + i * 0.18);
+      c.stroke();
+    }
+    polygon(
+      [
+        [radius * 0.45, -radius * 0.7],
+        [radius + 5, -radius * 0.2],
+        [radius * 0.55, radius * 0.05],
+      ],
+      false
+    );
+  } else if (element === 'light') {
+    polygon(starPoints(radius + 5, 5, 8));
+    polygon(starPoints(7, 2.5, 4));
+    for (let i = 0; i < 4; i++) {
+      const a = (i * Math.PI) / 2;
+      c.beginPath();
+      c.moveTo(Math.cos(a) * (radius + 6), Math.sin(a) * (radius + 6));
+      c.lineTo(Math.cos(a) * (radius + 9), Math.sin(a) * (radius + 9));
+      c.stroke();
+    }
+  } else if (element === 'shadow') {
+    c.beginPath();
+    c.arc(0, 0, radius + 1, 0.2, Math.PI * 1.8);
+    c.stroke();
+    c.beginPath();
+    c.arc(2, -1, radius * 0.55, Math.PI, Math.PI * 2.65);
+    c.stroke();
+    polygon(
+      [
+        [0, -7],
+        [5, 0],
+        [0, 7],
+        [-4, 1],
+      ],
+      true
+    );
+  } else {
+    // Rocket: compact missile outline with fins and exhaust chevrons.
+    polygon([
+      [0, -radius - 5],
+      [radius * 0.42, -radius * 0.1],
+      [radius * 0.32, radius * 0.58],
+      [0, radius * 0.35],
+      [-radius * 0.32, radius * 0.58],
+      [-radius * 0.42, -radius * 0.1],
+    ]);
+    polygon(
+      [
+        [-radius * 0.35, radius * 0.12],
+        [-radius - 2, radius * 0.58],
+        [-radius * 0.25, radius * 0.58],
+      ],
+      true
+    );
+    polygon(
+      [
+        [radius * 0.35, radius * 0.12],
+        [radius + 2, radius * 0.58],
+        [radius * 0.25, radius * 0.58],
+      ],
+      true
+    );
+    polygon(
+      [
+        [-4, radius + 2],
+        [0, radius + 6],
+        [4, radius + 2],
+      ],
+      false
+    );
+  }
+
+  // Level-up frame: Lv2 adds one diamond orbit; Lv3 adds a second segmented orbit.
+  c.globalAlpha = 0.72;
+  if (safeLevel >= 2) {
+    c.save();
+    c.rotate(Math.PI / 4);
+    c.strokeRect(-radius - 3, -radius - 3, (radius + 3) * 2, (radius + 3) * 2);
+    c.restore();
+  }
+  if (safeLevel >= 3) {
+    c.lineWidth = 1.2;
+    c.beginPath();
+    c.arc(0, 0, radius + 9, -0.35, 1.05);
+    c.stroke();
+    c.beginPath();
+    c.arc(0, 0, radius + 9, 1.75, 3.15);
+    c.stroke();
+    c.beginPath();
+    c.arc(0, 0, radius + 9, 3.85, 5.2);
+    c.stroke();
+  }
+
+  // Element-specific filled core makes the projectile silhouette readable at a glance.
+  c.globalAlpha = 0.96;
+  c.fillStyle = color;
+  c.beginPath();
+  if (element === 'fire') {
+    c.moveTo(0, -8 - safeLevel);
+    c.quadraticCurveTo(8, 1, 0, 8);
+    c.quadraticCurveTo(-7, 1, 0, -8 - safeLevel);
+  } else if (element === 'ice') {
+    c.moveTo(0, -8);
+    c.lineTo(6, 0);
+    c.lineTo(0, 8);
+    c.lineTo(-6, 0);
+    c.closePath();
+  } else if (element === 'poison') {
+    c.arc(0, 0, 6 + safeLevel, 0, Math.PI * 2);
+  } else if (element === 'earth') {
+    c.moveTo(0, -8);
+    c.lineTo(7, -2);
+    c.lineTo(4, 7);
+    c.lineTo(-5, 6);
+    c.lineTo(-7, -3);
+    c.closePath();
+  } else if (element === 'lightning') {
+    c.moveTo(3, -9);
+    c.lineTo(-5, 1);
+    c.lineTo(0, 1);
+    c.lineTo(-3, 9);
+    c.lineTo(6, -2);
+    c.lineTo(1, -2);
+    c.closePath();
+  } else if (element === 'wind') {
+    c.moveTo(-7, -5);
+    c.quadraticCurveTo(8, -8, 5, 1);
+    c.quadraticCurveTo(2, 7, -5, 5);
+    c.lineTo(1, 1);
+    c.lineTo(-7, -5);
+    c.closePath();
+  } else if (element === 'light') {
+    c.moveTo(0, -9);
+    c.lineTo(3, -3);
+    c.lineTo(9, 0);
+    c.lineTo(3, 3);
+    c.lineTo(0, 9);
+    c.lineTo(-3, 3);
+    c.lineTo(-9, 0);
+    c.lineTo(-3, -3);
+    c.closePath();
+  } else if (element === 'shadow') {
+    c.moveTo(0, -9);
+    c.quadraticCurveTo(10, -2, 4, 7);
+    c.lineTo(-2, 5);
+    c.quadraticCurveTo(-9, -2, 0, -9);
+    c.closePath();
+  } else {
+    c.moveTo(0, -10);
+    c.lineTo(5, 0);
+    c.lineTo(3, 6);
+    c.lineTo(0, 4);
+    c.lineTo(-3, 6);
+    c.lineTo(-5, 0);
+    c.closePath();
+  }
+  c.fill();
+  c.globalAlpha = 1;
+  c.fillStyle = '#FFFFFF';
+  c.beginPath();
+  c.arc(0, 0, safeLevel === 3 ? 2.5 : 1.8, 0, Math.PI * 2);
+  c.fill();
+  awakenSpriteCache.set(key, sprite);
+  return sprite;
+};
+
 const drawElementProjectile = (ctx, l, time) => {
   const elements = l.elements?.length ? l.elements : getWeaponElements(l.type);
   const frames = getProjectileSprites(elements, l.color || '#F97316');
@@ -1523,7 +1933,23 @@ const drawElementProjectile = (ctx, l, time) => {
   ctx.save();
   ctx.translate(l.x, l.y);
   ctx.rotate(Math.atan2(l.vy, l.vx) + Math.PI / 2); // 0 = facing up
-  ctx.drawImage(frame, -SPRITE_SIZE / 2, -SPRITE_SIZE / 2);
+  // Awakened shots use the element's own silhouette as the primary projectile.
+  // Keep the normal projectile faintly visible for fusion identity, then draw the
+  // cached, element-specific Awaken shape on top (no per-frame path construction).
+  const awakenLevel = l.awakenLevel || 0;
+  const hasAwaken = awakenLevel > 0 && l.awakenElement && elements.includes(l.awakenElement);
+  if (hasAwaken) {
+    ctx.globalAlpha = elements.length > 1 ? 0.28 : 0.38;
+    ctx.drawImage(frame, -SPRITE_SIZE / 2, -SPRITE_SIZE / 2);
+    ctx.globalAlpha = 1;
+    const awakenSprite = getAwakenSprite(l.awakenElement, awakenLevel);
+    if (awakenSprite) {
+      const awakenSize = 18 + awakenLevel * 2; // Compact Awaken overlay: Lv.1 20px, Lv.2 22px, Lv.3 24px
+      ctx.drawImage(awakenSprite, -awakenSize / 2, -awakenSize / 2, awakenSize, awakenSize);
+    }
+  } else {
+    ctx.drawImage(frame, -SPRITE_SIZE / 2, -SPRITE_SIZE / 2);
+  }
   ctx.restore();
 };
 
@@ -1596,6 +2022,9 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       abilities: [],
       lastShotTime: 0,
       weapon: 'default',
+      awakenElement: null,
+      stackLevel: 0,
+      awakenedLevels: {},
     },
     keys: {
       left: false,
@@ -1737,6 +2166,9 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
     g.player.abilities = [];
     g.player.lastShotTime = 0;
     g.player.weapon = 'default';
+    g.player.stackLevel = 0;
+    g.player.awakenElement = null;
+    g.player.awakenedLevels = {};
     g.player.hp = 100;
     g.player.maxHp = 100;
     g.keys.shoot = false;
@@ -1760,11 +2192,66 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
       g.cheatKeys = g.cheatKeys || {};
       g.cheatKeys[e.code] = true;
 
+      // Awaken cheat: Option/Alt + 1..9, or Control + 1..9 (Mac-friendly fallback).
+      // Check physical key codes as well as key values to support different keyboard layouts
+      // and the numeric keypad.
+      const normalizedDigitCode = e.code.startsWith('Numpad')
+        ? `Digit${e.code.slice('Numpad'.length)}`
+        : e.code;
+      const digitFromKey = /^[1-9]$/.test(e.key) ? `Digit${e.key}` : null;
+      const awakenKeyCode = AWAKEN_CHEATS.some(item => item.code === normalizedDigitCode)
+        ? normalizedDigitCode
+        : digitFromKey;
+      const awakenModifierPressed = e.altKey || e.ctrlKey;
+
+      if (
+        gameState === 'playing' &&
+        !e.repeat &&
+        awakenModifierPressed &&
+        awakenKeyCode &&
+        Date.now() - (g.lastCheatTime || 0) > 350
+      ) {
+        const awakenCheat = AWAKEN_CHEATS.find(item => item.code === awakenKeyCode);
+        if (awakenCheat) {
+          e.preventDefault();
+          const player = g.player;
+          const currentElements = getWeaponElements(player.weapon || 'default');
+          const alreadyHasElement = currentElements.includes(awakenCheat.element);
+
+          // Keep an existing fusion if it contains the selected element. If the
+          // current weapon is a single element, create a fusion where available.
+          // An unrelated two-element fusion is replaced to avoid a 3-element weapon.
+          if (!alreadyHasElement) {
+            if (currentElements.length === 1) {
+              const comboKey = [...currentElements, awakenCheat.element].sort().join('+');
+              player.weapon = ELEMENT_COMBOS[comboKey] || awakenCheat.element;
+            } else {
+              player.weapon = awakenCheat.element;
+            }
+          }
+
+          player.stackLevel = 3;
+          player.awakenElement = awakenCheat.element;
+          player.awakenedLevels = { ...(player.awakenedLevels || {}), [awakenCheat.element]: 3 };
+          player.lastShotTime = 0;
+          g.lastCheatTime = Date.now();
+          setWeapon(player.weapon);
+          g.bossVictory = {
+            text: `✨ ${awakenCheat.name.toUpperCase()} AWAKENED · LV 3`,
+            timer: 2.5,
+          };
+          return;
+        }
+      }
+
       // Cheat combos: hold two keys simultaneously to instantly activate a fusion weapon.
       if (gameState === 'playing' && !e.repeat && Date.now() - (g.lastCheatTime || 0) > 350) {
         const cheat = CHEAT_COMBOS.find(combo => combo.keys.every(key => g.cheatKeys[key]));
         if (cheat) {
           g.player.weapon = cheat.weapon;
+          g.player.stackLevel = 1;
+          g.player.awakenElement = null;
+          g.player.awakenedLevels = {};
           // Reset cooldown so the fusion weapon can fire immediately.
           g.player.lastShotTime = 0;
           g.lastCheatTime = Date.now();
@@ -1948,6 +2435,8 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             vy: weaponBalance.projectileSpeed ? -weaponBalance.projectileSpeed : vy,
             type: currentWep,
             elements: getWeaponElements(currentWep),
+            awakenElement: p.awakenElement,
+            awakenLevel: p.awakenElement ? p.awakenedLevels?.[p.awakenElement] || 0 : 0,
             color: wepInfo.color,
             radius:
               currentWep === 'rocket' || currentWep === 'rocket_lightning'
@@ -2312,13 +2801,20 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             if (l.pierce && l.hitTargets?.includes(m)) continue;
             // Hit!
             const elements = l.elements || getWeaponElements(l.type);
+            const awakenBonus =
+              l.awakenElement && elements.includes(l.awakenElement)
+                ? Math.min(0.12, (l.awakenLevel || 0) * 0.04)
+                : 0;
             const dmg =
-              (l.damage || 1) + (elements.includes('earth') || elements.includes('shadow') ? 1 : 0);
+              (l.damage || 1) * (1 + awakenBonus) +
+              (elements.includes('earth') || elements.includes('shadow') ? 1 : 0);
             m.hp -= dmg;
             if (elements.includes('poison')) {
               const balance = WEAPON_BALANCE[l.type] || {};
-              m.poisonTimer = balance.poisonDuration ?? 2.5;
-              m.poisonDamage = balance.poisonDamage ?? 0.5;
+              const poisonAwaken = l.awakenElement === 'poison' ? l.awakenLevel || 0 : 0;
+              m.poisonTimer = Math.min(4.0, (balance.poisonDuration ?? 2.5) + poisonAwaken * 0.25);
+              m.poisonDamage =
+                (balance.poisonDamage ?? 0.5) * (1 + Math.min(0.15, poisonAwaken * 0.05));
             }
             const hitType = l.type;
             const hitX = l.x;
@@ -2347,7 +2843,11 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             if ((l.elements || getWeaponElements(hitType)).includes('fire')) {
               // AoE Fire Splash
               for (const otherM of g.meteors) {
-                if (otherM !== m && Math.hypot(otherM.x - hitX, otherM.y - hitY) < 50) {
+                if (
+                  otherM !== m &&
+                  Math.hypot(otherM.x - hitX, otherM.y - hitY) <
+                    50 + (l.awakenElement === 'fire' ? (l.awakenLevel || 0) * 4 : 0)
+                ) {
                   otherM.hp -= 1;
                 }
               }
@@ -2372,8 +2872,9 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
             }
             if ((l.elements || getWeaponElements(hitType)).includes('ice')) {
               // Ice Freeze & Slow
-              m.slowTimer = 3.5;
-              m.speed = Math.max(0.6, m.speed * 0.45);
+              const iceAwaken = l.awakenElement === 'ice' ? l.awakenLevel || 0 : 0;
+              m.slowTimer = Math.min(4.5, 3.0 + iceAwaken * 0.35);
+              m.speed = Math.max(0.75, m.speed * (iceAwaken >= 3 ? 0.55 : 0.65));
               for (let k = 0; k < 8; k++) {
                 g.particles.push({
                   x: hitX,
@@ -3207,29 +3708,28 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
           } else if (pu.type === 'skill') {
             sfx.skillUnlocked();
             const previousWeapon = p.weapon || 'default';
-            const combinedWeapon = combineWeapons(previousWeapon, pu.weaponType);
+            const progression = processWeaponStack(p, pu.weaponType);
+            const combinedWeapon = progression.newWeapon;
             p.weapon = combinedWeapon;
+            p.stackLevel = progression.stackLevel;
+            p.awakenElement = progression.awakenElement;
+            p.awakenedLevels = progression.awakenedLevels;
             setWeapon(combinedWeapon);
             const wName = WEAPONS[combinedWeapon]?.name || 'Dual Plasma';
-            const comboSucceeded =
-              combinedWeapon !== 'default' &&
-              combinedWeapon !== pu.weaponType &&
-              combinedWeapon !== previousWeapon;
-            const fusionFailed =
-              previousWeapon !== 'default' &&
-              previousWeapon !== pu.weaponType &&
-              !comboSucceeded &&
-              combinedWeapon === pu.weaponType;
+            const awakenName =
+              WEAPONS[progression.awakenElement]?.name || progression.awakenElement;
+            const comboSucceeded = progression.type === 'fusion';
 
             g.bossVictory = {
-              text: comboSucceeded
-                ? `⚡ COMBO FORGED: ${wName.toUpperCase()}!`
-                : fusionFailed
-                  ? `💥 FUSION FAILED! SWITCHED TO ${wName.toUpperCase()}!`
-                  : combinedWeapon === 'default'
-                    ? '💥 WEAPON RESET TO DEFAULT!'
-                    : `✨ WEAPON: ${wName.toUpperCase()} EQUIPPED!`,
-              timer: 3.5,
+              text:
+                progression.type === 'awaken'
+                  ? `✨ ${awakenName.toUpperCase()} AWAKENED · LV ${progression.stackLevel}/3`
+                  : comboSucceeded
+                    ? `⚡ COMBO FORGED: ${wName.toUpperCase()}!`
+                    : progression.type === 'switch'
+                      ? `🔄 SWITCHED TO ${wName.toUpperCase()}!`
+                      : `✨ WEAPON: ${wName.toUpperCase()} EQUIPPED!`,
+              timer: 2.5,
             };
             for (let k = 0; k < 24; k++) {
               const angle = Math.random() * Math.PI * 2;
@@ -3594,6 +4094,16 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
               <span className="text-[10px] text-text/40">SCORE</span>
               <span className="text-white font-bold text-sm">{score}</span>
             </div>
+            <div
+              className="flex items-center gap-1 px-2 py-1"
+              aria-label={`${lives} ${lives === 1 ? 'life' : 'lives'} remaining`}
+              title={`${lives} ${lives === 1 ? 'nyawa tersisa' : 'nyawa tersisa'}`}
+            >
+              <span className="text-rose-400" aria-hidden="true">
+                ♥
+              </span>
+              <span className="font-bold tabular-nums text-white">{lives}</span>
+            </div>
             <div className="hidden sm:flex items-center gap-1 text-text/60">
               <FaTrophy size={11} className="text-accent-2" />
               <span>{highScore}</span>
@@ -3742,11 +4252,19 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                 </div>
               </div>
 
-              {/* Keyboard Fusion Cheats */}
-              <div
-                hidden={true}
-                className="mt-3 p-3 rounded-2xl bg-fuchsia-500/[0.08] border border-fuchsia-400/25 text-left w-full max-w-[280px]"
-              >
+              {/* Keyboard Awaken and Fusion Cheats */}
+              <div className="mt-3 p-3 rounded-2xl bg-fuchsia-500/[0.08] border border-fuchsia-400/25 text-left w-full max-w-[280px]">
+                <h3 className="text-xs font-black tracking-wider text-amber-200 mb-2">
+                  AWAKEN CHEATS · LV 3
+                </h3>
+                <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[10px] sm:text-[11px] font-mono mb-3">
+                  {AWAKEN_CHEATS.map(item => (
+                    <Fragment key={item.element}>
+                      <span className="text-amber-200 font-bold">{item.label}</span>
+                      <span className="text-white/75">{item.name}</span>
+                    </Fragment>
+                  ))}
+                </div>
                 <h3 className="text-xs font-black tracking-wider text-fuchsia-200 mb-2">
                   KEYBOARD FUSION CHEATS
                 </h3>
@@ -3759,7 +4277,9 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                   ))}
                 </div>
                 <p className="text-[9px] text-white/50 mt-2">
-                  Hold both keys simultaneously while the game is running.
+                  Mac: tekan Option (⌥) + angka; jika tidak tertangkap browser, gunakan Control +
+                  angka. Windows: Alt + angka. Untuk fusion, tahan kedua tombol kombinasi bersamaan
+                  saat game berjalan.
                 </p>
               </div>
 
