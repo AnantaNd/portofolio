@@ -4253,7 +4253,10 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
               </div>
 
               {/* Keyboard Awaken and Fusion Cheats */}
-              <div className="mt-3 p-3 rounded-2xl bg-fuchsia-500/[0.08] border border-fuchsia-400/25 text-left w-full max-w-[280px]">
+              <div
+                className="mt-3 p-3 rounded-2xl bg-fuchsia-500/[0.08] border border-fuchsia-400/25 text-left w-full max-w-[280px]"
+                hidden={true}
+              >
                 <h3 className="text-xs font-black tracking-wider text-amber-200 mb-2">
                   AWAKEN CHEATS · LV 3
                 </h3>
@@ -4293,10 +4296,7 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                     36 COMBINATIONS
                   </span>
                 </div>
-                <p className="text-[10px] text-white/70 leading-relaxed mb-2.5">
-                  Setiap pasang elemen kini dapat digabungkan menjadi senjata fusion unik! Ambil
-                  elemen kedua untuk menempa fusi dahsyat.
-                </p>
+
                 <div className="max-h-48 overflow-y-auto pr-1 space-y-1.5 scrollbar-thin scrollbar-thumb-white/20">
                   <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-1 text-[10px] font-mono">
                     <span className="text-white/75">🔥 Fire + ❄️ Ice</span>
@@ -4372,10 +4372,6 @@ export default function MeteorShooterModal({ isOpen, onClose }) {
                     <span className="text-white/75">☀️ Light + 🌑 Shadow</span>
                     <span className="text-violet-200 text-right">Eclipse Beam</span>
                   </div>
-                </div>
-                <div className="mt-2 pt-2 border-t border-white/10 text-[10px] leading-relaxed text-white/55">
-                  Jika mengambil elemen baru saat sudah memegang fusion weapon, senjata akan
-                  langsung beralih ke elemen drop terakhir yang diambil.
                 </div>
               </div>
             </div>
